@@ -1,0 +1,45 @@
+# 서문 {.unnumbered}
+
+이것은 임상 데이터 과학(Clinical Data Science)과 관련된 교육 자료를 공유하기 위한 사이트이다.
+
+-   R 프로그래밍 언어
+-   Python 프로그래밍 언어
+-   통계학
+-   AI
+
+2025년 4월말 현재 Python 프로그래밍 언어 관련 자료는 아직 없음.
+
+## 참고/권장 자료
+
+### 통계학
+
+1. 기초 통계학의 숨은 원리 이해하기, 김권현, 경문사
+
+### R 관련
+
+1.  [Advanced R](https://adv-r.hadley.nz/)
+    -   R 프로그래밍 언어의 프로그래밍 언어로서의 특징을 자세히 설명하는 해들리 위캄의 명저로 웹사이트에서도 누구나 읽을 수 있다.
+
+2.  [R for Data Science (2e)](https://r4ds.hadley.nz/)
+    -   R 언어를 사용하여 데이터 과학을 수행하는 전반적인 과정을 다룬다.
+    -   [The tidy tools manifesto](https://cran.r-project.org/web/packages/tidyverse/vignettes/manifesto.html)에 따른 일관된 접근법을 취한다.
+    
+3.  [Fundamentals of Data Visualization](https://clauswilke.com/dataviz/preface.html)
+    -   아름다운 데이터 시각화 방법을 설명한다.
+
+4. R로 하는 빅 데이터분석 (제3판), 김권현 저, 숨은원리
+
+
+
+### Python 관련
+
+1.  [The Python Tutorial](https://docs.python.org/3/tutorial/index.html)
+    -   웹사이트에서 (완전한 것은 아니지만) 한글로도 읽을 수도 있다.
+2.  [전문가를 위한 파이썬](https://product.kyobobook.co.kr/detail/S000214847242)
+    -   Python 언어의 특징을 자세히 설명
+3.  [Python for Data Analysis, 3E](https://wesmckinney.com/book/)
+    -   데이터 과학에 필요한 파이썬을 설명한다.
+    -   웹사이트에서 무료로 읽을 수 있다.
+
+### AI 관련 
+
