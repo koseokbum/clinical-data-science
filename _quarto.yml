@@ -1,0 +1,64 @@
+project:
+  type: book
+lang: "ko"
+book:
+  title: "SVH Neurology Code, Stats & AI"
+  page-footer: "The Catholic University of Korea, ST. Vincent’s Hospital, Department of Neurology" 
+  author: "Clinical Data Scientists, Department of Neurology, St. Vincent's Hospital"
+  # date: today
+  reader-mode: true
+  # cover-image: "images/cds.png"
+  sidebar:
+    logo: "images/cds.svg"
+  chapters:
+    - index.qmd
+    - part: "R 언어의 기초: 가급적 learning curve를 완만하게"
+      chapters:
+        - setting-up.qmd
+        - names-values.qmd
+        - vectors.qmd
+        - dataframe.qmd
+        - factors.qmd
+        - condition-function.qmd
+        - packages.qmd
+    - part: "R 언어를 더욱 강력하게: tidyverse의 세계"
+      chapters:
+        - tidydata.qmd
+        # - intro-tidyverse.qmd
+        - dplyr.qmd
+        - relational-dplyr.qmd
+        - windowing.qmd
+        - ggplot2.qmd
+        # - lubridate.qmd
+        # - stringr.qmd
+
+    # - part: "Python 언어"
+    #   chapters:
+    #     - object.qmd
+        
+        # - super-stars.qmd
+    - part: "의학 통계"
+      chapters: 
+        # - basic-stats.qmd
+        - descriptive.qmd
+        - gtsummary-descriptive.qmd
+        - clt.qmd
+    - references.qmd
+
+
+bibliography: references.bib
+lightbox: true
+filters: 
+  - webr
+  - style-text
+engine: knitr
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+
+
+
+
