@@ -1,0 +1,451 @@
+# [dplyr]{.style-text font-weight="bold" color="#014275"}로 데이터 가공
+
+::: {layout="[80,20]"}
+R `dplyr` 패키지는 `tidyverse`를 구성하는 주요 패키지의 하나이며, R 데이터프레임을 가공하여 사용자가 원하는 형태로 변환시키는 기능을 제공한다. 개념과 사용법이 쉽고 또한 기능이 강력하여 R 사용자들이 즐겨 사용하는 도구 가운데 하나이다. `d`는 `data.frame`, `plyr`는 공구(tools)을 의미한다. R `dplyr`은 파이썬 세계의 팬더스(pandas), 폴라스(polars), SQL 세계의 DuckDB 등과 함께 스프레드시트와 같은 4각형 데이터를 처리하는 핵심 도구로 인정받고 있다. 또 이해를 넓혀 보면 관계형 데이터베이스를 다루는 SQL(structured query language)과도 깊게 연관되어 있으며, SQL을 사용하지 않아도 데이터베이스와도 소통할 수 있다.
+
+![dplyr: a grammar of data manipulation](https://dplyr.tidyverse.org/logo.png)
+:::
+
+`dplyr` 설치와 사용은 다음과 같은 방법 가운데 하나를 선택한다. `tidyverse`를 설치하고 부르면 여기에 포함되어 있어 따로 관리할 필요가 없기도 하다. 
+
+```{r}
+#| eval: false
+# 설치
+install.packages("dpylr")
+# 로딩
+library(dplyr)
+```
+
+또는 다음과 같이 해도 된다.
+
+```{r}
+#| eval: false
+install.packages("tidyverse")
+library("tidyverse")
+```
+
+## 도움이 되는 자료 
+
+`dplyr` 패키지는 워낙 인기가 많아 인터넷을 검색하면 수많은 자료를 자료를 찾을 수 있을 것이다. 그래도 가장 읽을 만하다고 보는 문서는 패키지에 내장된 비니에트와 `dplyr` 저자 등이 설명하는 아래 책의 내용이다.
+
+- `dplyr` 패키지에 포함된 비니에트 문서들
+
+    - [Introduction to dplyr](https://dplyr.tidyverse.org/articles/dplyr.html)
+    - [Grouped data](https://dplyr.tidyverse.org/articles/grouping.html)
+    - [Column-wise operations](https://dplyr.tidyverse.org/articles/colwise.html)
+    - [Row-wise operations](https://dplyr.tidyverse.org/articles/rowwise.html)
+    - [Two-table verbs](https://dplyr.tidyverse.org/articles/two-table.html)
+    - [Window functions](https://dplyr.tidyverse.org/articles/window-functions.html)
+    - [Programming with dplyr](https://dplyr.tidyverse.org/articles/programming.html)
+
+- [R for Data Science (2e) 3장 Data transformation](https://r4ds.hadley.nz/data-transform.html)
+
+- [dplyr CheatSheet(PDF)](https://rstudio.github.io/cheatsheets/data-transformation.pdf)
+
+## dplyr을 시작하기에 앞서 알아둘 내용 
+
+[dplyr에선 파이프(pipe) 연산자를 많이 사용한다.]{.style-text font-weight="bold"} **파이프(pipe)**란 수도나 가스관처럼 흐름을 연결하는 구조를 말한다. R에서는 이런 연산자가 native로 지원하는 것이 없어서 처음에는 `magrittr`이라는 패키지를 통해서 이 기능을 사용했고, `%>%`라는 연산자를 이용했다. 그러다가 나중에 파이프에 대한 요구가 증가하면서 네이티브로 지원하기 시작했고, `|>`이라는 연산자를 제공한다. 파이프의 개념은 간단하다. 앞의 연산의 결과가 다음 함수의 첫 번째 인자로 전달된다. 예를 들어, 다음과 같은 코드가 있다고 하자.
+
+```{r}
+#| label: pipe-example
+library(dplyr)
+mtcars |>
+    filter(mpg > 20) |>
+    select(mpg, cyl) |>
+    head()
+```
+
+이 코드는 다음과 같은 의미를 갖는다.
+
+```{r}
+df1 <- filter(mtcars, mpg > 20)
+df2 <- select(df1, mpg, cyl)
+df3 <- head(df2)
+```
+
+위 뒤 코드는 같은 결과를 내지만, 앞의 코드의 가독성이 더 높고, 중간 변수들을 만들지 않아도 되어 메모리로 아끼고 이름들을 관리하지 않아도 된다는 장점을 가진다. 여기서는 R 네이티브 연산자인 `|>`을 사용한다(`%>%`를 사용해도 문제가 될 것은 없다).
+
+[dplyr를 사용할 때는 non-standard evaluation(NSE)을 사용한다.]{.style-text font-weight="bold"} 이 의미는 별도로 찾아보길 바라고, 단 알아둘 것은 열 이름을 사용할 때 **작은따옴표나 큰따옴표 없이** 바로 열 이름을 사용한다는 점이다. 이런 점은 R 콘솔에서는 아주 편리하지만 코드로 프로그래밍할 때는 부가적으로 고려해야 하는 점들이 존재한다. 그것은 [Programming with dplyr](https://dplyr.tidyverse.org/articles/programming.html) 문서를 참고하길 바란다.
+
+
+[dplyr은 데이터프레임을 처리하는 도구이다]{.style-text font-weight="bold"} 그래서 `dplyr`의 주요 동사(verbs)는 데이터프레임을 받아서 데이터프레임을 반환한다. 예를 들어, `filter()` 함수는 데이터프레임을 받아서 데이터프레임을 반환한다. 그래서 대부분 코드는 데이터프레임에서 시작하여 데이터프레임으로 끝난다.
+
+
+[dplyr의 핵심 개발자인 Hadley Wickham은 문법을 좋아한다.]{.style-text font-weight="bold"} 굉장한 인기를 얻은 그래픽 패키지인 `ggplot2`의 `gg`는 `grammer of graphics`의 약자이다. `dplyr`은 `grammer of data manipulation`의 약자이다. 그는 어떤 도구의 의미를 부여할 때 문법(grammer)라는 단어를 즐겨 사용한다. `dplyr`에서는 핵심 함수들을 뭔가를 하는 동사라는 의미에서 **verbs**라고 부른다.
+
+## dplyr 개론
+
+- 이 글은 dplyr 비니에트 [Introduction to dplyr](https://dplyr.tidyverse.org/articles/dplyr.html)를 요약(주로 번역)한 것임.
+
+패키지를 로딩하고, 그 안에 포함된 `starwars` 데이터셋을 살펴보자.
+```{r}
+#| message: false
+library(dplyr)
+head(starwars)
+```
+
+## 단일 테이블 동사(single table verbs)
+
+
+먼저 단일 테이블을 대상하는 함수들을 다룬다. 앞에서 설명한 것처럼 이들을 패키지 저자는 single table verbs라고 부른다. 이들 함수를 배울 때는 행과 열 방향을 머릿속에 그리면 좋다.
+
+- 행
+    - `filter()`: 조건에 맞는 행들을 걸러냄 
+    - `slice()`: 위치에 있는 행들을 선택 
+    - `arrange()`: 행들을 정렬 
+
+- 열 
+    - `select()`: 사용할 열들을 선택 
+    - `rename()`: 열 이름 변경 
+    - `mutate()`: 기존 열들의 값을 가지고 새로운 열을 추가 
+    - `relocate()`: 열의 위치 변경 
+
+- 행 그룹
+    - `summarise()` 
+
+### 행을 대상으로 한 함수
+
+#### `filter()`: 조건에 맞는 행들을 필터링
+
+이 함수에 조건을 주면, 조건을 만족하는 행들을 걸러낸댜. 
+
+다음은 `skin_color`가 `"light"`이고(AND), `eye_color`가 `"brown"` 값을 가지는 행들을 걸러낸다.
+
+```{r}
+starwars |> filter(skin_color == "light", eye_color == "brown")
+```
+
+#### `arrange()`: 정렬 (행들의 위치 변경)
+
+`arrange()` 함수 안에는 정렬의 기준이 되는 열을 순서대로 지정한다.
+
+```{r}
+starwars |> arrange(height, mass)
+```
+
+디폴트는 오름차순이다. 내림차순으로 정렬할 때는 `desc()` 함수로 감싼다.
+
+
+```{r}
+starwars |> arrange(desc(height))
+```
+
+#### `slice()`: 인덱스를 가지고 일부 행들을 선택 
+
+위치 값을 가지고 행들을 처리한다.
+
+
+```{r}
+# 5번째에서 10번째 행을 잘라낸다.
+starwars |> slice(5:10)
+```
+
+비슷한 함수로 `slice_head()`, `slice_tail()`는 앞부분, 뒷부분을 잘라낸다.
+
+
+```{r}
+starwars |> slice_head(n = 3)
+```
+
+`slice_sample()` 함수는 무작위로 `n`개 행을 추출하거나 `prop` 비율 만큼 추출한다. 부트스트랩(bootstrap)을 수행할 때는 "복원추출"을 사용하는데, 이런 경우에는 `replace = TRUE` 옵션을 사용한다. 
+
+
+```{r}
+starwars |> slice_sample(n = 5)
+starwars |> slice_sample(prop = 0.1)
+starwars |> slice_sample(prop = 0.1, replace = TRUE)
+```
+
+`slice_min()`, `slice_max()`는 어떤 변수의 최소, 최대값을 가지는 행들을 골라낸다.
+
+
+```{r}
+starwars |>
+    filter(!is.na(height)) |>
+    slice_max(height, n = 3)
+```
+
+
+```{r}
+starwars |>
+    filter(!is.na(height)) |>
+    slice_min(height, n = 3)
+```
+
+
+이상은 `dplyr cheatsheet에서 다음 내용을 설명한 것이다.
+
+![Dplyr cheatsheet에서](images/dplyr-cheat-cases.png){#fig-dplyr-cases}
+
+### 열을 대상으로 하는 함수 
+
+`select()` 함수는 관심이 되는 열들만 골라낸다. 이 함수 안에서는 아주 다양한 방식의 열 선택 방법을 구사할 수 있다. 
+
+- 정수: 열의 인덱스 
+- 열 이름들: 해당 열들 
+- `:`: 데이터프레임에서 맞붙어 있는 변수들 선택 
+- `!`: 해당되지 않는 변수 선택(논리적으로 NOT)
+- `ends_with()`, `starts_with()`, `contains()` 등 보조 함수 
+- `where(참또는거짓반환하는 함수)`
+
+
+```{r}
+starwars |> select(hair_color, skin_color, eye_color)
+starwars |> select(hair_color:eye_color)
+starwars |> select(!(hair_color:eye_color))
+starwars |> select(ends_with("color"))
+```
+
+#### `rename()` 함수 
+
+`rename()` 함수는 열의 이름을 바꾼다. `새로운이름 = 이전이름` 형태로 인자를 지정한다.
+
+```{r}
+starwars |> rename(Name = name)
+```
+
+
+#### `mutate()`: 새로운 열 추가 
+
+`mutate()` 함수는 보통 기존 열에 있는 값들을 계산하여 새로운 열을 만들면서 추가한 데이터프레임을 반환한다. 
+
+```{r}
+starwars |> mutate(height_m = height / 100)
+```
+
+만약 새롭게 만든 열만을 남기고자 할 경우(이 열만 가진 데이터프레임을 만듦), `.keep = "none"` 옵션을 사용한다. 
+
+
+```{r}
+starwars |>
+    mutate(
+        height_m = height / 100,
+        BMI = mass / (height_m^2),
+        .keep = "none"
+    )
+```
+
+#### `relocate()`: 열의 위치를 재조정 
+
+`relocate()` 함수는 열의 위치를 재조정할 때 사용한다. `.after`, `.before`라는 인자를 사용한다.
+
+다음은 `sex`에서 `homeworld`까지의 열들을 `height` 열 앞으로 옮긴다.
+
+```{r}
+starwars |> relocate(sex:homeworld, .before = height)
+```
+
+
+이상은 dplyr cheatsheet에서 다음 내용을 정리한 셈이다.
+
+![](images/dplyr-cheatsheet-variables.png)
+
+
+### 행 그룹에 대한 써머리: `summarise()` 함수 
+
+이 함수는 하나의 데이터프레임을 통계 계산을 통해 한 줄로 요약할 때 편리하다. 나중에 `group_by()`와 함께 사용할 때, 그룹별 차이를 정리하여 볼 때 편리하다.
+
+
+```{r}
+starwars |>
+    summarise(N = n(), mean_height = mean(height, na.rm = TRUE))
+```
+
+## 그룹화 데이터
+
+- 이 글은 `dplyr` 비니에트 [Grouped Data](https://dplyr.tidyverse.org/articles/grouping.html과 함께 읽으면 도움일 될 것임.
+
+### `group_by()` 함수로 **그룹화 데이터프레임** 만들기 
+
+보통 카테고리형 변수(`치료군`/`대조군` 등)을 사용하는 이유는 이 변수의 레벨에 따라 데이터셋을 분리하여 그 특징들을 서로 비교하려는 것이다. 여기서 말하는 **그룹화 데이터프레임**이란 논리적으로 전체 데이터셋을 분리한 데이터셋을 말한다.
+
+- 그룹화 변수를 `group_by()` 함수로 넘기면 그룹화된 데이터프레임이 만들어 진다.
+
+```{r}
+by_species <- starwars |> group_by(species)
+by_sex_gender <- starwars |> group_by(sex, gender)
+```
+
+출력하면 그룹화된 데이터프레임인지 알 수 있다. Tibble인 경우 2번째 행에 `Groups:`로 시작되는 행을 볼 수 있다.
+
+```{r}
+by_species
+by_sex_gender
+```
+
+- `group_keys()` 함수를 사용하여, 각 그룹의 키를 확인할 수 있다. 즉 그룹이 나눠지는 기준 값이 무엇인지를 알 수 있다. 
+
+
+```{r}
+by_species |> group_keys()
+by_sex_gender |> group_keys()
+```
+
+- `group_indices()` 함수를 통해서 행이 어떤 그룹에 속하는지 알 수 있다. 
+
+```{r}
+by_species |> group_indices()
+```
+
+- `group_rows()` 함수로 각 그룹을 구성하는 행들을 알 수 있다. 
+
+```{r}
+by_sex_gender |> group_rows()
+```
+
+- `group_vars()`를 통해서 그룹핑 변수 이름을 확인한다.
+
+
+```{r}
+by_species |> group_vars()
+by_sex_gender |> group_vars()
+```
+
+- (이미) 그룹화된 데이터프레임에 대하여 `group_by()` 함수를 적용하면 기존 그룹핑이 해제되고 새로운 변수에 따라 다시 그룹핑된다. 이렇게 새롭게 그륩핑하는 것이 아니라 추가하려고 하면 `.add = TRUE` 인자를 사용한다. 그룹핑을 해제하려면 `ungroup()` 함수를 사용한다.
+
+그룹화 데이터프레임을 사용하면 다음과 같이 그룹에 대한 써머리를 한 문장으로 간결하게 정리할 수 있다. 
+
+```{r}
+starwars |>
+    group_by(sex) |>
+    summarise(N = n(), mean_height = mean(height, na.rm = TRUE)) |>
+    knitr::kable()
+```
+
+이상은 dplyr cheatsheet에서 다음 부분을 설명했다.
+
+![](images/dplyr-cheatsheet-groups.png)
+
+
+## 여러 열에 대한 오퍼레이션: `across()`을 중심으로 
+
+- 도움이 되는 자료  
+    - [Column-wise operations](https://dplyr.tidyverse.org/articles/colwise.html#why-did-it-take-so-long-to-discover-across)
+    - [R for Data Science (2e): 26장 Iteration](https://r4ds.hadley.nz/iteration.html)
+
+
+
+```{r}
+glimpse(penguins)
+```
+
+`across()` 함수를 이해하고 잘 활용하려면 약간의 배경 지식이 필요하다. 먼저 **함수형 프로그래밍(functional programming)** 기법이다. 
+
+베이스 R에서 `lapply()`, `sapply()` 함수는 대표적인 함수형 프로그래밍 함수이다. 이 함수들은 데이터 프레임이나 리스트에 대하여 반복적으로 함수를 적용하여 결과를 반환한다. 예를 들어, 다음과 같은 데이터 프레임이 있다고 하자.
+
+```{r}
+df <- data.frame(
+    x = 1:3,
+    y = 4:6,
+    z = 7:9
+)
+```
+
+이 데이터 프레임에 대하여 `lapply()` 함수를 적용하면 다음과 같은 결과를 얻을 수 있다. 두 번째 인자로 각 열에 대하여 적용할 함수(이름)을 전달한다는 점을 주의한다. 이처럼 함수를 하나의 값으로 사용하여 프로그래밍하는 기법을 **함수형 프로그래밍**이라고 한다.
+
+```{r}
+lapply(df, mean)
+```
+
+`sapply()` 함수는 이 결과를 벡터로 반환한다.
+
+```{r}
+sapply(df, mean)
+```
+
+`lappy()`, `sapply()` 함수의 두 번째 인자는 함수이다. 이 함수는 데이터 프레임의 각 열에 대하여 적용된다. 만약 우리가 원하는 것을 계산하는 함수가 없으면 직접 만들어서 사용할 수 있고, `lapply()`, `sapply()` 함수 안에서 바로 정의하여 사용할 수 있는데, 이런 경우 이름이 없는 함수인 익명 함수(anonymous function)를 사용한다. 
+
+R에서 익명 함수는 베이스 R과 특정 패키지를 이용하는 방법들이 존재했는데, `R` 4.1.0 버전부터는 네이티브로 지원한다. Tidyverse에서도 `purrr` 패키지를 통해서 R 포뮬러(`~`)을 이용한 익명 함수를 사용했었는데, 이제는 네이티브 익명함수를 사용하는 쪽으로 권장되고 있다.
+
+::: {.callout-note}
+## R에서 익명 함수 만들기 
+
+버전 4.1.0 이전에서 베이스 R로 익명함수는 다음과 같이 만들었다.
+```.R
+lapply(df, function(x) mean(x, na.rm = TRUE))
+```
+
+버전 4.1.0 이후에서는 네이티브로 지원하므로 다음과 같이 만들면 된다.
+```.R
+lapply(df, \(x) mean(x, na.rm = TRUE))
+```
+:::
+
+### `across()` 함수 
+
+- 사용할 데이터 
+    - [palmerpenguins](https://allisonhorst.github.io/palmerpenguins/)
+    - 2025년 4월 새로 업데이트된 R 4.5.0 버전에 `palmerpenguins`이 base R에 포함되었다.
+ 
+![Palmer Penguins 데이터셋은 기존 iris를 대신하여 교육용으로 많이 사용되는 펭귄 생태학 데이터이다.](https://allisonhorst.github.io/palmerpenguins/reference/figures/lter_penguins.png){#fig-plamerpenguins fig-align="center" width="50%"}
+
+다음과 같은 코드로 현재 사용하는 R 버전을 확인할 수 있다.
+```{r}
+#| prompt: true
+R.version.string
+```
+
+`across()` 함수는 주로 `summarise()` 함수와 함꼐 사용된다. 첫 번째 인자는 `.cols`로 함수를 적용시킬 열을 선택하고, 두 번째 인자는 `.fns`로 적용시킬 함수를 지정한다. 
+
+
+다음은 `where(is.numeric)` 함수를 사용하여 `penguins` 데이터셋에서 모든 숫자형 변수들에 대하여 평균을 계산하는 예이다. 
+
+```{r}
+penguins |>
+    summarise(across(
+        where(is.numeric),
+        \(x) mean(x, na.rm = TRUE)
+    ))
+```
+
+다음은 모든 행에서 unique한 값의 개수를 계산하는 예이다. 
+
+```{r}
+penguins |>
+    summarise(across(
+        everything(),
+        n_distinct
+    ))
+```
+
+### 여러 행에 대한 오퍼레이션: `rowwise()` 함수 
+
+`rowwise()` 함수는 각 행 단위로 함수를 적용시킬 때 사용한다. 
+
+```{r}
+df <- tibble(name = c("Mara", "Hadley"), x = 1:2, y = 3:4, z = 5:6)
+df
+```
+
+먼저 `rowwise()` 함수를 사용하지 않을 때를 생각해 보자. 다음 코드는 `df` 데이터프레임을 구성하는 `x`,`y`, `z` 열을 모두 더하는 방식으로 평균을 구한다. 
+
+```{r}
+df |>
+    mutate(m = mean(c(x, y, z), na.rm = TRUE))
+```
+
+만약 각 행에 대한 평균을 구하고자 한다면, `rowwise()` 함수를 사용하여 각 행에 대하여 평균을 계산한다.
+```{r}
+df |>
+    rowwise() |>
+    mutate(m = mean(c(x, y, z), na.rm = TRUE))
+```
+
+이렇게 열이 몇 개 되지 않을 때는 문제가 없지만, 열이 많은 경우에는 `c_across()` 함수를 사용하면 `select()` 함수에서 열을 선택하는 방법을 적용시킬 수 있다. 
+
+```{r}
+penguins |>
+    rowwise() |>
+    mutate(m = mean(c_across(bill_len:body_mass), na.rm = TRUE))
+```
+
+## 테이블 대상 동사 
+
+이 내용을 이해하기 위해서는 **관계형 데이터베이스**에 관한 기본적인 이해가 선행되어야 하기 때문에 [@sec-relational-dplyr 장] 에서 별도로 설명한다.
+
+- 도움이 되는 자료 
+  - [dplyr 비니에트 Two-table verbs](https://dplyr.tidyverse.org/articles/two-table.html)
+  - [R for Data Science (2e) 19장 Joins](https://r4ds.hadley.nz/joins.html#summary)
+
+
+

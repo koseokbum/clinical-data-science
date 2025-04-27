@@ -1,0 +1,40 @@
+# 유명 인사, 책, 회사 
+
+## 로버트 젠틀맨 
+
+![로버트 젠틀맨, 뉴질랜드대학 통계학과에서 Ross Ihaka와 더불어 R 언어를 만들었다. 한때 23andMe 부사장이었고, 현재 하버드의대에 생물정보학과에 재직중이다.](images/gentleman.png){#fig-gentleman fig-align="center"}
+
+- R 언어는 Bioinformatics(생물정보학) 분야에서 가장 많이 사용되는 언어이기도 한다. 생물정보학 분야 R 패키지를 공유하는 Bioconductor라는 별도의 저장소가 있는데 로버트 젠틀맨이 만들었다.
+
+- 아쉽게도 최근 23andMe 회사는 파산 보호를 신청했다. 
+    - [구글도 투자한 美 23앤드미 파산...유전자검사 시장 왜 어렵나](https://biz.chosun.com/science-chosun/bio/2025/03/25/KXHAOKQLUJADPLIY4APE5INILA/?utm_source=naver&utm_medium=original&utm_campaign=biz)
+
+## Posit PBC
+
+![Posit PBC(public benefit corporation), RStudio 등을 만든 곳으로 지금도 여전히 중요한 역할을 하고 있다.](images/posit.png){#fig-posit width="50%" fig-align="center"}
+
+
+## 해들리 위캄과 그의 책들 
+
+![해들리 위캄, Posit PBC의 선임 과학자이자 유명한 책들을 쓴 저자](images/hadley.png){#fig-hadley}
+
+- [Advanced R](https://adv-r.hadley.nz/index.html): R 언어 체계에 대한 자세한 설명 
+- [R for Data Science(2e)](https://r4ds.hadley.nz): R 언어를 사용한 데이터 과학 
+- `tidyverse`와 `tidy data`의 개념 
+- `dplyr` 패키지: 데이터 핸들링의 기본 
+- `ggplot2` 패키지: R 언어를 사용한 통계 그래픽 
+
+
+## 이 자료를 만든 도구: Quarto
+
+- 이 자료는 [Quarto](https://quarto.org)라는 도구를 사용해서 만들었는데, 이것 역시 Posit PBC에서 개발했다.
+    - 책, 웹사이트, 블로그, 프레젠테이션 등 다양한 것들을 만들 수 있다.
+
+![Quarto: An open-source scientific and technical publishing system](images/quarto.png){#fig-quarto}
+
+
+## 웹 애플리케이션 도구: Shiny
+
+- 웹 앱은 이것을 주로 사용한다. 이것 역시도 Posit PBC에서 개발한 도구이다.
+
+![Shiny Web Applications](images/shiny.png){#fig-shiny}

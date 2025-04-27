@@ -1,0 +1,290 @@
+# 관계형 데이터베이스 기초 개념, [Joins와 two-table verbs]{.style-text font-weight="bold" color="#014275"} {#sec-relational-dplyr}
+
+관계형 데이터베이스(Relational Database)는 구조화된 데이터를 저장하는 데이터베이스로 보이지는 않지만 우리는 늘 이것을 사용한다. 데이터베이스 전문가가 될 것은 아니라 할지라도 그 개념을 이해하고, 좀 더 나아가 활용할 수 있다면 좋을 것이다. 또한 이 개념을 이해하면 **Tidy data** 개념을 이해하는데 큰 도움이 된다(실제로 tidy data의 개념은 관계형 데이터베이스의 개념에서 유래되었다).
+
+관계형 데이터베이스는 테이블(table)의 집합으로 이루어진 데이터베이스이다. 각 테이블은 열(column)과 행(row)으로 이루어져 있으며, 각 열은 특정한 속성을 나타내고, 각 행은 개별 데이터 항목을 나타낸다. 즉, 관계형 데이터베이스의 테이블은 다음과 같은 특징이 있다. 
+
+- 테이블은 열(column)과 행(row)으로 이루어져 있다. 
+- 각 열은 특정한 속성을 나타내고, 각 행은 개별 데이터 항목을 나타낸다. 
+- 테이블은 키(key)를 통해 연결될 수 있다. 
+
+키(key)를 통해 테이블들이 서로 어떤 **관계**를 가지면서 온전한 데이터베이스를 이루기 때문에, 관계형 데이터베이스라고 하는 것이다.
+
+## 관계형 데이터베이스 예제: 눈으로 보는 관계형 데이터베이스
+
+관계형 데이터베이스는 **Data Normalization**이라는 개념을 통해 데이터의 중복을 최소화하고, 데이터의 일관성을 유지한다.
+
+간단한 도서관 도서 대출 시스템을 관리하는 데이터베이스를 가지고 설명한다(이 자료는 DuckDB: Up and Running (Wei-Meng Lee 저) 책에서 발췌했다). 
+
+이 데이터베이스는 4개의 테이블로 구성되어 있다.
+
+- `authors`: 저자 정보
+- `books`: 도서 정보
+- `borrowers`: 대출자 정보
+- `borrowings`: 대출 정보
+
+![데이터베이스의 테이블 사이의 관계](images/books.png){#fig-books fig-align="center"}
+
+다음 코드는 지금은 이해할 필요가 없는데, 설명을 위해서 가상의 데이터베이스를 만들었고, 이것을 R로 불러오는 코드라고만 이해하면 된다.
+
+```{r}
+library(DBI)
+library(duckdb)
+con <- dbConnect(duckdb::duckdb(), "data/books.duckdb", read_only = TRUE)
+
+authors <- dbReadTable(con, "Authors")
+books <- dbReadTable(con, "Books")
+borrowers <- dbReadTable(con, "Borrowers")
+borrowings <- dbReadTable(con, "Borrowings")
+```
+
+먼저 저자 정보이다.
+
+```{r}
+#| echo: false
+#| label: tbl-authors
+#| tbl-cap: 저자 정보(authors)
+knitr::kable(authors)
+```
+
+도서 정보이다.
+
+```{r}
+#| echo: false
+#| label: tbl-books
+#| tbl-cap: 도서 정보(books)
+knitr::kable(books)
+```
+
+대출자 정보이다.
+
+```{r}
+#| echo: false
+#| label: tbl-borrowers
+#| tbl-cap: 대출자 정보(borrowers)
+knitr::kable(borrowers)
+```
+
+대출 정보이다.
+
+```{r}
+#| echo: false
+#| label: tbl-borrowings
+#| tbl-cap: 대출 정보(borrowings)
+knitr::kable(borrowings)
+```
+
+이 데이터베이스는 "대출"이라는 사건을 중심으로 보는 것이 좋다. 어떻게 데이터를 찾아가는지 살펴보자. `borrowings` 테이블에서 5번 대출 이벤트를 읽어 보자. 
+
+```{r}
+#| echo: false
+#| label: tbl-borrowings-5
+knitr::kable(borrowings[borrowings$book_id == 5, ])
+```
+
+
+1. 이 이벤트는 `book_id`가 `5`인 도서를 대출한 이벤트이다. 
+2. 이 도서를 대출한 사람은 `borrower_id`가 `5`인 사람이다. 
+3. 대출 날짜는 `2022-03-30`이고 반납 날짜는 `2022-04-01`으로 대출 이벤트가 종결되었다. 
+
+이 데이터를 찾아가는 방법은 다음과 같다. `books` 테이블과 `authors` 테이블에서 책과 그 저자를 확인할 수 있다. 이런 과정은 모두 look-up 프로세스이다.
+
+```{r}
+#| echo: false
+#| label: tbl-books-5
+#| tbl-cap: 도서 정보(books)
+knitr::kable(books[books$book_id == 5, ])
+```
+
+```{r}
+#| echo: false
+#| label: tbl-authors-5
+#| tbl-cap: 저자 정보(authors)
+knitr::kable(authors[authors$author_id == 5, ])
+```
+
+대출자 정보를 확인해 보자. `borrowers` 테이블에서 대출자 정보를 확인할 수 있다.
+
+```{r}
+#| echo: false
+#| label: tbl-borrowers-5
+#| tbl-cap: 대출자 정보(borrowers)
+knitr::kable(borrowers[borrowers$borrower_id == 5, ])
+```
+
+
+이번에는 `borrowings` 테이블에서 1번 대출 이벤트를 읽어 보자. 
+
+```{r}
+#| echo: false
+#| label: tbl-borrowings-1
+#| tbl-cap: 대출 정보(borrowings)
+knitr::kable(borrowings[borrowings$borrowing_id == 1, ])
+```
+
+1. 이 이벤트는 `book_id`가 `1`인 도서를 대출한 이벤트이다. 
+2. 이 도서를 대출한 사람은 `borrower_id`가 `1`인 사람이다. 
+3. 대출 날짜는 `2022-01-01`이고 반납 날짜는 `2022-01-02`으로 대출 이벤트가 종결되었다. 
+
+이 데이터를 찾아가는 방법은 다음과 같다. `books` 테이블과 `authors` 테이블에서 책과 그 저자를 확인할 수 있다.
+
+```{r}
+#| echo: false
+#| label: tbl-books-1
+#| tbl-cap: 도서 정보(books)
+knitr::kable(books[books$book_id == 1, ])
+```
+
+```{r}
+#| echo: false
+#| label: tbl-authors-1
+#| tbl-cap: 저자 정보(authors)
+knitr::kable(authors[authors$author_id == 1, ])
+```
+
+대출자 정보를 확인해 보자. `borrowers` 테이블에서 대출자 정보를 확인할 수 있다.
+
+```{r}
+#| echo: false
+#| label: tbl-borrowers-1
+#| tbl-cap: 대출자 정보(borrowers)
+knitr::kable(borrowers[borrowers$borrower_id == 1, ])
+```
+
+## 테이블 사이의 관계를 규정하는 키(Key)
+
+앞서 `authors`, `books`, `borrowers`, `borrowings` 테이블의 첫 열은 `author_id`, `book_id`, `borrower_id`, `borrowing_id`이다. 이 열은 각 테이블의 행을 고유하게 식별하는 열이다. 이와 같은 열을 기본 키(primary key)라고 한다. 즉, 기본 키는 하나의 테이블에서 고유한 값을 가지고, 다른 행과 구분된다.
+
+기본 키는 어떤 경우에는 고유한 값을 가지는 하나의 열로 구섣되기도 하고, 또 어떤 경우는 여러 개의 열 값들의 조합으로 구성되기도 한다. 이렇게 여러 개의 값으로 구성된 기본 키를 복합 키(composite key)라고 한다. 
+
+외래 키(foreign key)는 다른 테이블의 기본 키를 참조하는 열이다. 예를 들어 `books` 테이블에서 `author_id` 열은 `authors` 테이블의 `author_id` 열을 참조한다. 이렇게 참조 관계를 가지는 열을 외래 키(foreign key)라고 하고, 우리는 그 값을 따라가서 정보를 확인할 수 있다. 
+
+```{r}
+#| echo: false
+#| tbl-cap: 도서 정보(books)
+knitr::kable(books)
+```
+
+`borrowings` 테이블은 `book_id` 열은 `books` 테이블의 `book_id` 열을 참조하고, `borrower_id` 열은 `borrowers` 테이블의 `borrower_id` 열을 참조한다. 이 둘 모두 외래 키이다. 
+
+```{r}
+#| echo: false
+#| tbl-cap: 대출 정보(borrowings)
+knitr::kable(borrowings)
+```
+
+## JOINS과 dplyr two-table verbs
+
+관계형 데이터베이스는 데이터들이 열결된 테이블들에 흩어져 있게 된다. 따라서 필요한 경우 테이블들을 연결하여 원하는 정보를 조회할 수 있는 기능이 필요하다. 이런 기능을 조인(join)이라고 한다. 테이블을 결합하는 논리에 따라 여러 종류의 조인이 있는데, 가장 많이 사용하는 조인만 정리해 보면 다음과 같다.
+
+- inner join: 두 테이블에서 일치하는 값을 기준으로 결합
+- 외부 조인(outer join)
+  - left (outer) join: 왼쪽 테이블의 모든 데이터를 포함하고, 오른쪽 테이블에서 일치하는 값이 있는 경우 결합
+  - right (outer) join: 오른쪽 테이블의 모든 데이터를 포함하고, 왼쪽 테이블에서 일치하는 값이 있는 경우 결합
+    - 이것은 왼쪽 조인의 반대이다. 
+  - full (outer) join: 두 테이블의 데이터를 합치는 것
+
+이제 `dplyr` 패키지에서 제공하는 two-table verbs(joins) 함수를 살펴보자.  
+
+```{r}
+#| message: false
+library(dplyr)
+```
+
+먼저 가장 흔히 사용되는 left (outer) join을 살펴보자. 이 함수는 왼쪽 테이블의 모든 데이터를 포함하고, 오른쪽 테이블에서 일치하는 값이 있는 경우 결합한다. 여기서 왼쪽, 오른쪽이라고 하는 말은 조인할 테이블을 좌, 우로 두는 것을 표현한 것이다. 이 left join은 왼쪽 테이블은 그대로 유지하면서, 오른쪽에 있는 테이블의 데이터를 추가하는 것이다. 
+
+조인을 이해할 때는 사용자의 의도를 명확하게 하는 것이 중요하다. 예를 들어 다음은 모든 대출 정보를 조회하는 데, 도서 정보를 추가하고 싶다고 하자. 다음은 모든 대출 정보를 가지고 오고, 거기에 매칭되는 도서 정보를 추가한다.
+
+```{r}
+#| echo: false
+knitr::kable(borrowings)
+knitr::kable(books)
+```
+
+
+```{r}
+borrowings |>
+    left_join(books, by = c("book_id" = "book_id"))
+```
+
+대출 정보에서 누가 대출을 했는지 알고 싶다고 하자. 
+
+```{r}
+#| echo: false
+knitr::kable(borrowings)
+knitr::kable(borrowers)
+```
+
+```{r}
+borrowings |>
+    left_join(borrowers, by = c("borrower_id" = "borrower_id"))
+```
+
+만약 이 결과를 가지고 그 도서의 제목 정보도 추가하고 싶을 수 있다. 그러면 다시 연결하면 된다. 
+
+```{r}
+borrowings |>
+    left_join(borrowers, by = c("borrower_id" = "borrower_id")) |>
+    left_join(books, by = c("book_id" = "book_id"))
+```
+
+
+이 도서관으 대출자들은 어떤 저자를 좋아하는지 알고 싶을 수 있다. 이런 경우 대출 정보와 대출자 정보를 연결하고, 그 정보를 가지고 도서 정보를 확인하고, 그 정보를 가지고 저자 정보를 확인하면 된다. 
+
+```{r}
+borrowings |>
+    left_join(borrowers, by = c("borrower_id" = "borrower_id")) |>
+    left_join(books, by = c("book_id" = "book_id")) |>
+    left_join(authors, by = c("author_id" = "author_id"))
+```
+
+조인은 테이블은 행의 개수가 많으면 헷갈리기 쉽상이다. 조인의 종류를 아주 간단히 정리해 보면 다음과 같다.
+
+```{r}
+df1 <- tibble(x = c(1, 2), y = 2:1)
+df2 <- tibble(x = c(3, 1), a = 10, b = "a")
+```
+
+```{r}
+knitr::kable(df1)
+knitr::kable(df2)
+```
+
+`inner_join`은 두 테이블에서 일치되는 값이 있을 때 이뤄진다. 다음에서 `by = "x"`라고 했으므로 `x`열의 보면 된다. 공통으로 가지고 있는 값은 `1`이다. 그래서 `df1`과 `df2`에서 이 `1`에 해당되는 행을 찾아서 결합한다.
+
+```{r}
+df1 |>
+    inner_join(df2, by = "x") |>
+    knitr::kable()
+```
+
+`left_join`은 왼쪽 테이블의 모든 행을 포함하고, 오른쪽 테이블에서 일치하는 값이 있는 경우 결합한다. 다음에서 `by = "x"`라고 했으므로 `x`열의 보면 된다. `df1`에는 `x`가 `1`인 행이 있고, `df2`에는 `x`가 `1`인 행이 있으므로 이 행은 결합된다. 반면 `df1`에는 `x`가 `2`인 행이 있고, `df2`에는 `x`가 `2`인 행이 없으므로 이 행은 결합되지 않지만 left join이므로 왼쪽 테이블의 행은 모두 포함된다. `df2`에는 여기에 대응하는 값이 없기 때문에 `NA`로 채워진다. 
+
+```{r}
+df1 |>
+    left_join(df2, by = "x") |>
+    knitr::kable()
+```
+
+`full_join`은 두 테이블의 모든 행을 포함하고, 일치하는 값이 있는 경우 결합한다. 다음에서 `by = "x"`라고 했으므로 `x`열의 보면 된다. `df1`에는 `x`가 `1`인 행이 있고, `df2`에는 `x`가 `1`인 행이 있으므로 이 행은 결합된다. 반면 `df1`에는 `x`가 `2`인 행이 있지만 `df2`에는 없고, `df2`에는 `x`가 `3`인 행이 있지만 `df1`에는 없다. 이 행들 결합되지 않지만 full join이므로 모두 포함된다. 값이 존재하지 않은 부분은 `NA`로 채워진다. 
+
+```{r}
+df1 |>
+    full_join(df2, by = "x") |>
+    knitr::kable()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

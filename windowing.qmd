@@ -1,0 +1,86 @@
+# 윈도우 함수([window functions]{.style-text font-weight="bold" color="#014275"})
+
+윈도우 함수(window function)는 [@fig-window-functions]와 같이 행 집합에 대해 계산을 수행하는 함수들로, 다음과 같은 계산에 사용된다.
+
+- 누적 계산 
+- 순위 계산 
+- 이전/이후의 값 참조 
+
+![개략적인 window 함수의 작동법](images/window-functions.png){#fig-window-functions width="75%" fig-align="center"}
+
+
+간단한 데이터셋을 만들어 윈도우 함수의 작동 방식을 이해하자.
+
+```{r}
+#| message: false
+library(tidyverse)
+df <- tibble(
+    group = c("A", "A", "B", "B", "B"),
+    value = c(10, 20, 10, 30, 20)
+)
+df
+```
+
+누적 합계는 `cumsum()` 함수를 사용한다.
+
+```{r}
+df |>
+    mutate(cumsum = cumsum(value))
+```
+
+만약에 그룹화 데이터프레임을 사용하면 그룹별로 누적 합계를 계산한다.
+
+```{r}
+df |>
+    group_by(group) %>%
+    mutate(cumsum = cumsum(value))
+```
+
+
+앞, 뒤의 값을 참조할 때는 `lag()`, `lead()` 함수를 사용한다.
+
+```{r}
+df %>%
+    mutate(
+        previous_value = lag(value),
+        next_value = lead(value)
+    )
+```
+
+만약 그룹화 데이터프레임을 사용하면 그룹별로 앞, 뒤의 값을 참조한다.
+
+```{r}
+df %>%
+    group_by(group) %>%
+    mutate(
+        previous_value = lag(value),
+        next_value = lead(value)
+    )
+```
+
+순위를 부여하는 함수들이 있다. 
+
+- `row_number()`: 순위를 부여하는 데 값이 같으면 데이터 순서대로 순위를 부여한다. 
+- `min_rank()`: 순위를 부여하는 데 값이 같으면 같은 순위를 부여하고, 그 다음 순위는 건너뛴다. 
+- `dense_rank()`: 순위를 부여하는 데 값이 같으면 같은 순위를 부여하고, 그 다음 순위는 건너뛰지 않는다. 
+
+```{r}
+df %>%
+    mutate(
+        row_number_value = row_number(value),
+        rank_value = min_rank(value),
+        dense_rank_value = dense_rank(value)
+    )
+```
+
+만약 그룹화 데이터프레임을 사용하면 그룹별로 순위를 부여한다.
+
+```{r}
+df %>%
+    group_by(group) %>%
+    mutate(
+        row_number_value = row_number(value),
+        rank_value = min_rank(value),
+        dense_rank_value = dense_rank(value)
+    )
+```

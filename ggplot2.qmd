@@ -1,0 +1,272 @@
+---
+knitr:
+  opts_chunk:
+    fig-align: center
+    fig-width: 4
+    fig-height: 3
+---
+
+# [ggplot2]{.style-text font-weight="bold" color="#014275"} 통계 그래픽의 문법 
+
+R `ggplot2` 패키지는 통계 그래픽 도구로, 많은 사람들이 사용한다. 심지어 이 패키지를 사용하기 위해서 R 언어를 배울 정도이다. 
+
+
+## 참고 자료 
+
+::: {#fig-elephants layout-ncol=2 layout-nrow=1}
+
+![[ggplot2](https://ggplot2-book.org): 패키지 저자가 직접 쓴 저서로 기본 개념을 충실히 설명한다.](https://ggplot2-book.org/cover.jpg){#fig-ggplot2 fig-align="center" width="25%"}
+
+![[Fundamentals of Data Visualization](https://clauswilke.com/dataviz/): 효과적인 통계 그래픽을 설명하는데 ggplot2 패키지를 사용하여 설명한다.](https://clauswilke.com/dataviz/cover.png){#fig-dataviz fig-align="center" width="25%"}
+
+이 책들은 모두 웹사이트에서 무료로 읽을 수 있다.
+:::
+
+## ggplot2 패키지란?
+
+`ggplot2` 패키지의 `gg`는 `grammer of graphics`의 약자로, 그래프의 문법을 말한다. 이 패키지는 Wilkinson, Leland 라는 통계학자가 쓴 "The Grammar of Graphics"라는 책에서 소개하는 통계 그래픽의 문법이라는 개념을 R 언어로 구현한 것이다. 
+
+이런 개념을 모두 알아야 이 패키지를 쓸 수 있는 것은 아니고, 약간의 개념만 알아도 충분히 사용할 수 있고, 인터넷에는 자료가 넘친다. 위 "Fundamentals of Data Visualization" 책도 정말 훌륭한 책이다.
+
+이 그래픽의 기본 개념에 대해서 알아보자.
+
+![ggplot2에서 다루는 플롯의 구성 요소(Introduction to ggplot2 비니에트에서 인용)](https://ggplot2.tidyverse.org/articles/ggplot2_files/figure-html/overview_graphic-1.png){#fig-ggplot2-components width="75%" fig-align="center"}
+
+`ggplot2`은 그래프를 [@fig-ggplot2-components] 처럼 나눠서 생각한다. 
+
+현재 컴퓨터에 `ggplot2` 패키지가 설치되어 있지 않다면, 다음과 같이 설치한다.
+
+```{r}
+#| eval: false
+install.packages("ggplot2")
+```
+
+`ggplot2` 패키지를 로딩한다.
+
+```{r}
+library(ggplot2)
+```
+
+`ggplot2` 패키지로 그래프를 만들 때는 일반적으로 다음 문법을 따른다.
+
+```.R
+ggplot(data = <data>) +
+    geom_<type>(aes(<mapping>)) +
+    <other layers>
+```
+
+::: {.column-margin}
+![ggplot2 플롯 만드는 과정](https://socviz.co/assets/ch-03-ggplot-flow-vertical.png){#fig-ggplot2-flow width="50%" fig-align="center"}
+:::
+실제 그래프를 만들어 보자. 대부분의 경우는 Data, Mapping, Layers만 이해하면 바로 시작할 수 있다. 
+```{r}
+# 데이터 로딩
+stroke_df <- readRDS("./data/stroke_df.rds")
+```
+
+```{r}
+library(ggplot2)
+ggplot(stroke_df) +
+    geom_density(aes(avg_glucose_level, fill = stroke)) +
+    theme_bw() +
+    labs(
+        title = "Density Plot of Average Glucose Level By Stroke",
+        x = "Average Glucose Level",
+        y = "Density"
+    ) +
+    theme(
+        plot.title = element_text(size = 15, face = "bold", color = "steelblue"),
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15)
+    )
+```
+
+다음은 `stroke_df` 데이터셋의 `hypertension`과 `stroke` 변수에 대한 막대 그래프이다.
+
+```{r}
+ggplot(stroke_df) +
+    geom_bar(aes(hypertension, fill = stroke)) +
+    labs(
+        title = "Bar Plot of Hypertension By Stroke",
+        x = "Hypertension",
+        y = "Count"
+    ) +
+    theme_bw() +
+    theme(
+        plot.title = element_text(size = 15, face = "bold", color = "steelblue"),
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15)
+    )
+```
+
+## ggplot2에서 사용하는 데이터: tidy 데이터프레임 
+
+`ggplot2`로 플롯을 만들 때는 `ggplot()`이라는 함수로 시작하고, 보통 여기에 플롯에 사용할 데이터프레임을 지정한다. 참고로 `mpg` 데이터셋은 `ggplot2` 패키지에 포함되어 있으며 `library()` 함수로 패키지를 로딩하면 바로 사용할 수 있는 상태가 된다.
+
+```{r}
+ggplot(data = mpg)
+```
+
+`ggplot2` 패키지는 `tidyverse` 패키지군에 속하며, tidy data.frame을 사용한다. 
+
+```{r}
+head(mpg)
+```
+
+만약 데이터가 데이터프레임으로 되어 있지 않으면 데이터프레임으로 만들어 주어야 하고, tidy하지 않으면 tidy하게 만들고 시작해야 한다. 
+
+## ggplot2 Mapping
+
+그래프라는 것은 데이터셋의 가진 어떤 것을 시각적인 어떤 것으로 변환한 것이다.  데이터가 가진 어떤 값을 지옴의 디자인 속성에 매핑하여 그래프를 만드는 것이다. `ggplot2`에서는 다음과 같은 용어를 사용한다. 
+
+- `geometric objects(geoms)`: 그래프에서 시각적으로 보여지는 것들 
+- `aesthetic attributes`: 지옴(geoms)의 디자인의 속성 
+
+이 관계를 `aes()` 함수 안에서 지정한다. 문법은 다음과 같은 형태를 취한다. 
+
+```.R
+aes(x = cty, y = hwy)
+```
+
+이것의 의미는 `cty`라는 변수의 값을 `x`라는 위치 속성에 매핑하고, `hwy`라는 변수의 값을 `y`라는 위치 속성에 매핑한다는 뜻이다. 보통 이 함수는 `ggplot()` 또는 `geom_*()` 함수 안에서 사용한다. 
+
+## ggplot2 레이어 
+
+`ggplot2`는 레이어를 쌓아서 그래프를 완성한다. 이런 레이어들 `geometry`, `statistical transformation`, `position adjustment`라는 속성을 가진다. 
+
+- `geometry`: 점, 선, 사각형 등 
+- `statistical transformation`: 어떻게 데이터를 정리하여 보여줄 것이지 지정 
+- `position adjustment`: 어디에 표시하게 할 것인가 지정 
+
+레이어는 `geom_*()` 또는 `stat_*()` 함수로 만들고, 레이어를 추가할 때는 `+` 연산자를 사용한다. 
+
+## ggplot2로 간단한 플롯 만들어 보기 
+
+```{r}
+ggplot(data = mpg) +
+    geom_point(aes(x = cty, y = hwy))
+```
+
+이 코드는 점을 표현하는 레이어를 가지고 있는데, `mpg` 데이터프레임읜 `cty` 변수를 `x` 위치에, `hwy`를 `y` 위치에 표시한다. 여기서 `statistical transformation`은 사용되기는 했지만 별도로 지정하지 않고 디폴트를 사용하였다. 디폴트는 `stat = "identity"` 즉 항등함수이다. `positional adjustment`도 지정하지 않고 디폴트를 사용했는데 `position = "identity"`, 즉 있는 위치 그대로 둔다는 뜻이다. 
+
+위 코드를 다음과 같이 작성해도 적어도 아직까지는 같다.
+
+```{r}
+ggplot(data = mpg, aes(x = cty, y = hwy)) +
+    geom_point()
+```
+
+그렇지만 나중에 다른 레이어를 추가하면 달라질 수 있다. 그 이유는, 앞의 `ggplot()` 함수 안에서 `aes()`를 지정하면 뒤따르는 모든 레이이에서 이 매핑을 사용한다는 뜻이고, 개별 `geom_*()` 함수에서 `aes()`를 지정하는 것은 개별 레이어에만 적용한다는 뜻이다. 
+
+`x`, `y`는 위치를 나타내는 디자인 요소이다. 색을 의미하는 `aesthetic`은 `color`이고, 형태는 `shape`, 크기는 `shape`이다.  이것들을 추가해 본다.
+
+
+```{r}
+# color aesthetic
+ggplot(data = mpg) +
+    geom_point(aes(x = cty, y = hwy, color = class))
+```
+
+
+```{r}
+# shape aesthetic
+ggplot(data = mpg) +
+    geom_point(aes(x = cty, y = hwy, shape = drv))
+```
+
+```{r}
+# size aesthetic
+ggplot(data = mpg) +
+    geom_point(aes(x = cty, y = hwy, size = cyl))
+```
+
+필요한 경우 하나의 변수를 여러 개의 aesthetic으로 동시에 매핑할 수도 있다. 의미만 있다면 어떻게 조합해도 괜찮다.
+
+
+```{r}
+# drv를 shape와 color aesthetic으로
+ggplot(data = mpg) +
+    geom_point(aes(x = cty, y = hwy, shape = drv, color = drv))
+```
+
+다음은 `geom_smooth()`라는 레이러를 추가한 코드이다.
+
+```{r}
+# drv를 shape와 color aesthetic으로
+ggplot(data = mpg) +
+    geom_point(aes(x = cty, y = hwy, shape = drv, color = drv)) +
+    geom_smooth(aes(x = cty, y = hwy))
+```
+
+두 레이어의 `x`, `y` 매핑을 공유하기 때문에 이것을 `ggplot()`으로 보내도 같은 플롯이 된다.
+
+
+```{r}
+ggplot(data = mpg, aes(x = cty, y = hwy)) +
+    geom_point(aes(shape = drv, color = drv)) +
+    geom_smooth()
+```
+
+## 매핑이 아닌 셋팅 
+
+다음과 같은 플롯에서 포인트이 셋을 특정 값으로 설정할 필요가 있을 수 있다.
+
+```{r}
+ggplot(data = mpg) +
+    geom_point(aes(x = cty, y = hwy, size = cyl))
+```
+
+이런 경우에는 매핑이 아닌 셋팅을 사용한다. 즉, `aes()` 밖에서 관련 값을 지정한다.
+
+
+```{r}
+ggplot(data = mpg) +
+    geom_point(aes(x = cty, y = hwy, size = cyl), color = "steelblue")
+```
+
+## 스케일(scles)의 사용 
+
+`ggplot2`은 매핑(mapping)이라는 개념으로 데이터를 디자인 요소에 연결하여 그래프를 만든다. 스케일(scales)은 이런 매핑에 사용되는 일종의 함수이다. 그래서 매핑 하나하나에 명시적이든 암묵적인든 여기에 대응하는 스케일이 존재한다. 
+
+많은 경우 디폴트 스케일이 사용되기 때문에 스케일을 명시적으로 드러낼 필요없이 암묵적으로 작동한다. 예를 들어 다음 그래프는 `x`, `y`, `color`라는 매핑을 사용하기 때문에, 암묵적으로 이에 대응하는 3개의 스케일이 있는 셈이다.
+
+```{r}
+ggplot(mtcars) +
+    geom_point(aes(x = wt, y = mpg, color = factor(cyl)))
+```
+
+명시적으로 드러내면 다음과 같다.
+
+```{r}
+ggplot(mtcars, aes(wt, mpg)) +
+    geom_point(aes(color = factor(cyl))) +
+    scale_x_continuous() +
+    scale_y_continuous() +
+    scale_colour_discrete()
+```
+
+스케일을 사용하면 축(axis)와 레전드(legend)를 제어하여 자신이 원하는 그래프를 만들 수 있다. 
+
+```{r}
+#| echo: false
+#| label: tbl-scale-args
+#| tbl-cap: 스케일 (함수)를 사용하여 다음을 조절할 수 있다.
+df <- tibble::tribble(
+    ~스케일함수의인자, ~축, ~레전드,
+    "name", "Label", "Title",
+    "breaks", "Ticks & grid line", "Key",
+    "labels", "Tick label", "Key label"
+)
+knitr::kable(df)
+```
+
+
+![스케일을 통해서 축과 레전드를 제어할 수 있다. [ggplot2 book](https://ggplot2-book.org/scales-guides.html)에서 인용함.](https://ggplot2-book.org/diagrams/scale-guides.png){#fig-scale-guides width="75%" fig-align="center"}
+
+
+이런 스케일 함수는 보통 `scale_에스테틱_데이터타입`의 형태를 취한다. 또 스케일 시스템을 보강하기 위해서 `scales`라고 하는 R 패키지가 개발되어 있다.
+

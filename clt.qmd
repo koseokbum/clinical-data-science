@@ -1,0 +1,88 @@
+# Central Limit Theorem(중심 극한 정리)
+
+## 히스토그램 
+
+- 구간을 만들고, 구간에 해당되는 값들의 개수를 카운트하여 막대로 표시한 그래프 
+- 분포(distribution)을 만들 때 좋다.
+
+```{webr-r}
+x <- rnorm(100)
+x
+hist(x)
+```
+
+
+## 연구와 추론  
+
+![<https://practical-stats-med-r.netlify.app/sampling>에서 인용](https://practical-stats-med-r.netlify.app/images/sample_frame.png){#fig-inference}
+
+## 중심극한정리 
+
+::: {.callout-tip}
+
+## 중심극한 정리
+The Central Limit Theorem for **sample means** in statistics states that, given a sufficiently large sample size, **the sampling distribution of the mean** for a variable will approximate a normal distribution **regardless of the variable’s underlying distribution of the population observations:**
+
+$$
+\bar{X} \sim N(\mu, \frac{\sigma^2}{n})
+$$
+
+표본 평균에 대해서 중심극한 정리를 적용해 보았을 때,     
+어떤 모집단의 (확률)변수가 어떤 분포를 따르는지에 상관없이,     
+충분히 샘플이 크면,     
+샘플의 평균들의 분포(평균의 샘플링 분포)는 평균이 $\mu$이고, 분산이 $\frac{\sigma^{2}}{n}$인 정규분포를 따른다.
+:::
+
+- 분산의 (양의) 제곱근이 표준편차이다. 이 분포의 표준편차 $\sqrt{\frac{\sigma^{2}}{n}}$를 SEM(Standard Error of the Mean)이라고도 한다.
+
+- 평균 이외에도 다른 통계량(statistic)에도 적용할 수 있지만, 평균에 적용하는 경우가 가장 흔하다.
+
+## 평균의 샘플링 분포(Sampling distribution of the mean)
+
+![<https://practical-stats-med-r.netlify.app/sampling>에서 인용](https://practical-stats-med-r.netlify.app/images/many_samples.png){#fig-sampling-dist}
+
+## R 코드 시뮬레이션
+
+```{webr-r}
+# Parameters
+set.seed(123)
+n_samples <- 1000 # 1000개의 샘플 그룹
+sample_size <- 30 # 그룹 하나의 크기(샘플 크기) 30개
+population <- rpois(10000, lambda = 3) # 프와송 분포
+# population <- rexp(100000, rate = 0.5) # 지수 분포
+# population <- rbinom(10000, size = 20, prob = 0.2) # 이항 분포
+# 모집단에서 30개씩 뽑아서,
+# 1000개의 그룹을 만들고,
+# 각각의 그룹의 평균을 구해서 samle_means이라는 변수에 할당한다.
+sample_means <- replicate(n_samples, {
+    sample_data <- sample(population, size = sample_size, replace = TRUE)
+    mean(sample_data)
+})
+sample_means[1:100]
+```
+
+
+```{webr-r}
+hist(population, main = "모집단의 분포", xlab = "Value", col = "lightblue")
+hist(sample_means, main = "표본 평균의 분포\nDistribution of Sample Means", xlab = "Sample Mean", col = "lightgreen")
+```
+
+## Confidence Interval(신뢰구간)
+
+![<https://practical-stats-med-r.netlify.app/conf_intervals>에서 인용](https://practical-stats-med-r.netlify.app/conf_intervals_files/figure-html/fig-sample_distribution95-1.png){#fig-confint}
+
+
+$$
+95\%CI = \mu_{\bar{x}} \pm 1.96 \, \sigma_{\bar{x}} = \mu_{\bar{x}} \pm 1.96 \, \frac{\sigma}{\sqrt{n}}
+$$
+
+### 신뢰구간의 의미
+
+- 아래 그림에서 인용된 책을 읽어 보자.
+
+![<https://practical-stats-med-r.netlify.app/conf_intervals>에서 인용](https://practical-stats-med-r.netlify.app/conf_intervals_files/figure-html/fig-pop01-1.png){#fig-expop}
+
+
+![<https://practical-stats-med-r.netlify.app/conf_intervals>에서 인용](https://practical-stats-med-r.netlify.app/conf_intervals_files/figure-html/fig-intervals1-1.png){#fig-confs}
+
+- [@bmjconfidenceintervals]도 읽어 보자.

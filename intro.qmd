@@ -1,0 +1,260 @@
+# R 및 RStudio 설치
+
+# R 프로그래밍 언어란?
+
+
+- R is a free software environment for statistical computing and graphics.
+  - 즉, 통계 분석과 그래픽을 위한 프로그래밍 언어이다. 
+  - 요즈음은 Python과 더불어 데이터 과학(data science) 분야에서 가장 많이 사용되는 언어로 꼽힌다.
+
+
+![R 로고](https://www.r-project.org/logo/Rlogo.png){#fig-r-logo width="30%" fig-align="center"}
+
+
+## R 설치 
+
+- 오픈 소스로 누구나 무료로 사용할 수 있다. 
+- 구글에서 "CRAN"으로 검색하여, [The Comprehensive R Archive Network](https://cran.r-project.org)에 가서 컴퓨터 시스템에  맞는 것을 다운로드하여 설치한다. 설치할 때 특별히 고려할 내용은 없다.
+    - 윈도우, 맥, 리눅스 버전 모두 제공된다.
+    - R의 핵심을 이루는 부분은 의외로 아주 작다(필요한 것들은 packages를 사용하여 추가하여 사용한다).
+
+- R 언어는 보통 1년에 2 ~ 4회 업데이트 되는데, 업데이트 하려면 위 과정을 반복하면 된다. 
+
+### R 설치후 확인 
+
+R을 설치하고 실행하면 [@fig-r-console]과 같이 실행된다(실제는 안내문이 한글로 보일 것이다). 
+
+![처음 R을 설치하고 실행한 화면(R 콘솔)](http://www.intro2r.info/unit1/img/r-window.png){#fig-r-console}
+
+끝에 `>`을 볼 수 있다. 이것은 사용자의 명령을 기다린다는 뜻으로 **"프롬프트(prompt)"**라고 한다. 여기에 다음과 입력하여 엔터(Enter) 키를 치면 실행된다.
+
+
+```{r}
+#| prompt: true
+3 + 5
+```
+
+이와 같이 R은 기본적으로 사용자가 명령을 입력하면 R 해석기가 그것을 해석하고 실행한 다음 결과를 다시 출력해 주는 것을 반복하면서 실행된다. 이 과정을 Read-Evaluate-Print Loop라고 하고 REPL(레플)이라고 부른다. 또 이렇게 사용자가 R와 대화하듯이 작업하는 것을 대화형 모드(interactive mode)라고 부른다(나중에 R 명령들을 하나의 파일에 모아서 한꺼번에 실행시킬 수도 있는데 이것을 스크립트 모드(script mode)라고 한다).
+
+출력에서 앞에 보이는 `[1]`은 첫 번째 위치라는 것을 의미하는데 일단 무시해도 된다.
+
+-----------
+
+그런데, R 콘솔만 사용하여 일하는 경우는 거의 없다. R 언어를 중심에 두고, 사용자를 위한 여러 편이 기능들을 갖춰 놓은 RStudio라는 프로그램을 사용하여 R을 사용하는 경우가 많다. 
+
+## RStudio IDE(통합개발환경)
+
+- RStudio는 R 언어 사용의 편이를 제공하여 위해서 Posit.co라는 미국 회사가 개발하여 무료로(상용도 있지만) 배포하는 프로그램이다.
+
+- 구글에서 "RStudio"라고 검색하여 ["RStudio Desktop" 다운로드 사이트](https://posit.co/download/rstudio-desktop/)를 찾는다. 
+
+![앞에서 R은 설치했기 때문에 2번 Install RStudio를 클릭하여 자기 시스템에 맞는 것을 다운로드해서 설치한다.](images/r-studio.png){#fig-R-Studio}
+
+RStudio는 R 언어로 가지고 코드 작성, 패키지 제작, 각종 문서 만들기 등 다양한 일을 하는데 편리한 기능을 제공한다. 핵심은 코드를 작성하는 텍스트 에디터(text editor)이고 이외에도 아주 다앙한 기능을 제공한다. 이런 종류의 소프트웨어를 통합개발환경(integrated development environment)이라고 한다.
+
+
+### RStudio 실행 
+
+설치하고 RStudio를 실행하면, 왼도우인 경우 어떤 R을 사용할지 묻는 창이 보일 수도 있다.
+
+- `64bit`용 R을 사용한다고 선택하고 넘어가면 된다.
+
+
+RStudio를 실행하면 [@fig-RStudio]와 같이 실행된다. 
+
+![RStudio는 4개의 창으로 나눠 화면을 사용한다(배치를 사용자가 쉽게 바꿀 수도 있다)](images/RStudio.png){#fig-RStudio}
+
+[@fig-RStudio] 같이 된 경우
+- 왼쪽 아래가 앞에서 본 R 콘솔이다.
+- 왼쪽 위가 코드를 작성하는 텍스트 에디터이다.
+- 오른쪽에 현재 디렉터리의 파일을 관리하는 "Files", 플롯을 보여주는 "Plots" 창, 패키지를 관리하는 "Packages" 창, 현재 R 환경에 있는 객체들을 보여주는 "Environment" 창 등이 있다.
+
+R 콘솔에서 다음과 같이 코드를 입력하고 엔터(Enter) 키를 치면 실행해 보자. 이것은 표준 정규 분포(평균이 0이고 표준편차가 1인 정규분포)를 따르는 1000개의 난수 값을 생성한 다음, 그 값들의 분포를 히스토그램으로 만들어 본 예이다. 플롯은 "Plots" 창에서 보여준다. 
+
+```{r}
+#| eval: false
+#| prompt: true
+hist(rnorm(1000))
+```
+
+![난수에 대한 히스토그램 만들어 본 예](images/rstudio-hist.png){#fig-RStudio-hist}
+
+
+### RStudio에서 프로젝트(Project) 만들어 사용하기 
+
+보통 우리가 데이터 분석이나 논문 작업을 할 때, 관련된 데이터 파일, 논문, 그림 등을 하나의 폴더에 모아서 관리하는 경우가 많다. 여기서 말하는 프로젝트란 이런 폴더를 의미한다. RStudio는 이런 폴더를 쉽게 관리할 수 있는 기능을 제공한다.
+
+여기서 R 언어와 관련된 핵심 개념 하나를 알 필요가 있다. R이 실행되어 종료될 때까지를 R 세션이라고 한다. 또 R은 현재 실행된 디텍터리를 기준으로 어떤 일을 한다. 그러니까 실행된 디렉터리를 기준으로 엑셀에 있는 데이터를 읽을 수 있고, 이 실행된 디렉터리를 기준으로 데이터를 저장한다. 이처럼 R이 실행된 디렉터리로, 모든 일을 할 때 그 기준이 되는 디렉터리를 **작업 디렉터리(working directory)**라고 한다. `getwd()`라고 하면 현재 R 세션의 작업 디렉터리를 출력한다(보통 처음 시작할 때는 홈 디렉터리가 된다).
+
+```{r}
+getwd()
+```
+
+(물론 이런 개념을 이해하는 것이 중요할 수도 있지만...) RStudio 프로젝트 기능을 사용하면 굳이 이것에 신경쓰지 않아도 된다. 뒤에서 보면 알겠지만 RStudio가 자동으로 작업 디렉터리를 잡아 주기 때문이다.
+
+- RStudio 오른쪽 위를 보면 파란색의 Project라는 아이콘을 클릭한다.
+
+![](images/rstudio-create-project.png)
+
+- "New Project"를 클릭한다. 여기에서 "New Directory"를 선택한다.
+
+![](images/rstudio-new-project.png)
+
+- 다음은 프로젝트 타입을 선택하는 창이 뜬다. "New Project"를 선택한다.
+
+![](images/rstudio-project-type.png)
+
+- 다음은 이 프로젝트를 놓을 위치와 이름을 지정하는 창이 열린다. 중간에 "Browse..." 버튼을 클릭하여 폴더를 놓을 위치를 잡은 다음 이름을 입력하면 된다. 그리고 나서 "Create Project"를 클릭한다.
+
+![](images/rstudio-project-location-name.png)
+
+- 그 다음은 RStudio/R이 지정한 디렉터리를 작업 디렉터리로 새로 설정하면서 RStudio가 새로 실행된다. 그리고 컴퓨터에 해당 폴더에 이 프로젝트를 대표하는 아이콘 파일이 하나 생성된다. 위에서 `example`이라는 프로젝트 이름을 줬기 때문에 해당 위치에 `example`이라는 폴더와 그 안에 `example.Rproj`라는 아이콘 파일이 만들어진다.
+
+![](images/rstudio-project-icon.png)
+
+
+** 이 아이콘 파일은 프로젝트를 대표하는 파일이다. 윈도우 탐색기에서 이것을 클릭하면, 이 파일이 있는 곳을 작업 디렉터리로 설정하면서 RStudio가 실행된다. 
+
+### RStudio에서 프로젝트 열기 
+
+RStudio에서 특정 프로젝트는 여러 방법으로 열 수 있다.
+
+1. 윈도우 탐색기, 맥 파인더에서 폴더를 찾아서 앞에서 설명한 아이콘 파일을 클릭한다.
+
+1. RStudio에서 오른쪽 위 Project 아이콘을 클릭하면 작업하던 디렉터리들이 보인다. 여기서 원하는 디렉터리를 클릭한다.
+
+1. 이 리스트에서 보이지 않는다면 여기서 "Open Project..."를 선택하여 앞에서 설명한 아이콘 파일을 클릭하면 된다.
+
+## 파일의 위치(Path, 경로)
+
+컴퓨터에서 어떤 파일은 전체 파일시스템의 어떤 폴더 안에 존재한다. 윈도우나 맥이나 이런 파일시스템은 거꾸로 된 나무(tree) 모양으로 구성된다. 가장 상단에 뿌리(root)가 있고, 그 안에 여러 폴더가 있고, 그 폴더 안에 여러 폴더가 있는 식이다. 이런 시스템에서 파일의 위치를 해당 파일에 대한 경로(path)라고 한다. 
+
+폴더(folder)나 디렉터리(directory)는 같은 뜻을 가진 용어이다.
+
+다음과 같이 폴더가 구성되어 있다고 해 보자. `C:` 폴더 안에 `ABC`, `DEF`라는 폴더가 있고, `ABC` 폴더 안에 `Stroke`, `Peripheral`, `Dementia` 등의 폴더가 있고, `Stroke` 폴더 안에 `Embolic`이라는 폴더가 있고 그 안에 `embolic.data`라는 폴더가 있는 구조이다.
+
+```.bash
+- C:
+  - ABC
+    - Stroke
+      - Embolic
+        - raw-data
+          - embolic.data
+        - analysis.R
+    - Peripheral
+    - Dementia
+    - Movements
+    - Headache
+    - Epilepsy
+    - NeuroOpthalmo-Otology
+  - DEF
+    - Hello
+    - World
+```
+
+이 경우 `emolic.data`를 루트(root) `C:`에서 시작하여 찾아가는 경로는 `C:\ABC\Stroke\Embolic\raw-data\
+embolic.data`가 된다. 
+
+- 이처럼 윈도우에서는 
+  - 역슬래쉬 `\`를 사용하여 디렉터리를 구분한다.
+  - 또한 `C:`나 `D:`와 같은 여러 개의 루트 디레터리를 가진다.
+
+- 맥오에스(macOS)에서 `/ABC/Stroke/Embolic/raw-data/embolic.data`라고 사용한다.
+  - 맥에에스는 루트의 이름은 `/`로 표시한다.
+  - 디렉터리 간의 경계는 `/`로 구분한다.
+
+이와 같이 **루트에서 시작하여** 어떤 파일을 표기하는 경우를 **절대 경로(absolute path)**라고 한다
+  
+이 경우는 다르게 현재 작업 디렉터리를 기준으로 어떤 파일의 위치를 지목하는 것을 **상대 경로(relative path)**라고 한다. 상대 경로를 잘 사용하기 위해서는 윈도우/맥오에스 관계없이 다음 약어를 기억할 필요가 있다.
+
+- `.`: 현재 디렉터리 
+- `..`: 부모 디렉터리 
+
+위에서 `analysis.R`이라는 코드에서 `embolic.data`를 어떻게 표시할지 생각해 보자. `analysis.R` 파일과 `raw-data` 폴더는 모두 `Embolic` 디렉터리에 동급으로 존재한다. `analysis.R` 입장에서 현재 디렉터리에 있는 `raw-data` 폴더를 찾고, 그 안에 `embolic.data`를 찾아가면 된다. 따라서 이 경우에는(맥오에스에서처럼 슬래쉬를 사용한다면) `./raw-data/embolic.data`라고 써주면 되는 것이다. 
+
+R에서 경로를 잡을 때는 윈도우 방식 보다는 맥오에스 방식으로 잡는 것이 보편적이다. 왜냐하면 윈도우에서 쓰는 역슬래쉬를 문자열 안에서 쓰려면 이것이 다른 의미가 있는 역슬래쉬가 아닌 문자 그대로의 역슬래쉬를 표현해야 해서 역슬래쉬를 하나 더 써서 escaping을 해야 하기 때문이다. 
+
+## RStudio 프로젝트 폴더 구성하기 
+
+프로젝트 안에서 자기가 원하는 방식대로 폴더 등을 구성해서 사용하면 된다. 다음과 같은 형태로 자신이 원하는 대로 하면 된다.
+
+- `excel-data` 폴더
+- `clean-data` 폴더 
+- `analysis-code` 폴더
+- `results` 폴더
+- `images` 폴더 ...
+
+`excel-data` 폴더에 `mtcars.xlsx`라는 데이터 파일이 있다고 가정해 보자. 이 파일을 읽고, 결과를 `results` 폴더에 저장하는 예이다.
+
+```{r}
+#| eval: false
+library(readxl)
+library(dplyr)
+df <- read_excel("./excel-data/mtcars.xlsx")
+result <- df |>
+    group_by(cyl) |>
+    summarize(n = n(), mean_mpg = mean(mpg))
+
+saveRDS(result, file = "./results/cars-by-cyl.rds")
+```
+
+아직 R 패키지에 대한 개념을 설명하지 않고, `dplyr` 패키지를 사용한 데이터 핸들링 등을 설명하지 않았다. 자세히 볼 것은  이 파일의 입장에서 읽어올 파일의 위치나 결과를 저장할 파일의 위치를 지정하는 방법이다.
+
+궁금한 분들을 위해서 이 코드가 하는 일은 다음과 같다.
+
+```{r}
+#| warning: false
+# 필요한 패키지 로딩
+library(readxl)
+library(dplyr)
+```
+
+```{r}
+# 엑셀 파일을 읽어와서 df 데이터프레임에 할당
+df <- read_excel("./excel-data/mtcars.xlsx")
+head(df) # 처음 6개의 행을 보여준다.
+# 각 열 이름 아래 <dbl>  등은 해당 열의 데이터 타입이다.
+```
+
+```{r}
+result <- df |> # 이 데이터프레임에 대하여
+    group_by(cyl) |> # cyl의 값에 따라 그룹을 나누고
+    summarize(n = n(), mean_mpg = mean(mpg)) # 그룹별로 개수를 카운트하고, mpgd의 평균을 구하라
+# 그 결과를 result에 할당한다.
+```
+
+```{r}
+# 표로 모양으로 출력
+knitr::kable(result)
+```
+
+
+```{r}
+# 그 결과를 results 폴더에 rds 포맷으로 저장
+saveRDS(result, file = "./results/cars-by-cyl.rds")
+```
+
+## (RStudio에서) R 패키지 설치와 사용 
+
+R의 핵심은 아주 작다. 그 핵심을 보통 `base R`이라고 부른다. R의 가장 큰 장점의 하나는 이 `base R`에 다양한 기능을 추가하여 사용할 수 있는 패키지(package)가 다양하다는 것이다. 
+
+이런 패키지는 R 사용자들이 개발하여 공유하는 것으로 [CRAN](https://cran.r-project.org) 사이트를 통해서 배포된다. 오늘 기준 22,251개의 패키지가 등록되어 있다. 이것은 공식 등록된 숫자에 불과하다. 깃허브 등에는 더 많은 패키지들이 있다. 
+
+RStudio는 패키지를 설치 관리하는 창을 제공한다. "Packages"라는 창을 선택한다.
+
+![](images/package-install.png)
+
+
+RStudio는 패키지를 다운로드할 CRAN 사이트를 디폴트로 지정한다.  "Install" 창에서 다운로드할 패키지 이름을 입력하면 자동으로 내 컴퓨터에 설치되고, "Packages" 창 목록에서도 보일 것이다. 
+
+이렇게 다운로드된 패키지를 사용하고자 할 때는 `library()` 함수를 사용한다. 함수 안에 패키지 이름을 쓰면 된다. 따옴표로 붙여도 되고 붙이지 않아도 된다.
+
+```{r}
+#| eval: false
+#| prompt: true
+library(dplyr)
+```
+
+그리고 R 패키지들은 자주 업데이트된다. 위 그림에서 "Update"를 클릭하면 CRAN에 등록된 패키지의 버전과 내 컴퓨터에 저장된 패키지의 버전을 서로 비교하여 업데이트가 필요한 패키지들을 자동으로 보여준다. 
+
+

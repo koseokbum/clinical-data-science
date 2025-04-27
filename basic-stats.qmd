@@ -1,0 +1,58 @@
+# 기초 기술 통계 
+
+이 장에서는 기초 기술 및 추론 통계에 사용되는 R 함수들을 정리한다. 
+
+- Quantitative varialbes: central tendency & dispersion
+- Categorical variables: frequency, contingency table, chi-squared test 
+- Continous, Ordinal variables에 대한  correlation coefficient
+- Group difference:
+    - parametric: t-test
+    - non-parametric: Mann-Whitney U test, Kruskal-Wallis test 
+
+- Visualization
+
+## 기본 정리 함수 
+
+- 합계: `sum()`
+- 개수: `length()`
+- 평균: `mean()`
+- 분산: `var()`
+- 표준편차: `sd()`
+- 최솟값: `min()`
+- 최댓값: `max()`
+- 중앙값: `median()`
+- 범위: `range()`
+- 백분위수: `quantile()`
+- `fivenum()`: min, Q1, median, Q3, max
+- 변수 종류에 따른 기초 통계: `summary()`
+
+
+```{r}
+df <- readRDS("./data/stroke_df.rds")
+head(df)
+```
+
+
+```{r}
+q_vars <- c("age", "avg_glucose_level", "bmi")
+stats <- function(x, na.omit=FALSE) {
+    if (na.omit)
+        x <- x[!is.na(x)]
+    m <- mean(x)
+    n <- length(x)
+    s <- sd(x)
+    skew <- sum( (x-m)^3/s^3) / n
+    kurt <- sum((x-m)^4/s^4)/n - 3
+    return (c(n=n, mean=m, stdev=s, skew=skew, kurtosis=kurt))
+}
+sapply(df[q_vars], stats, na.omit=TRUE)
+```
+
+
+```{r}
+library(dplyr)
+df |> 
+    select(q_vars, stroke) |> 
+    group_by(stroke) |> 
+    summarize(N=n())
+```
