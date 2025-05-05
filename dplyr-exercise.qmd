@@ -1,0 +1,508 @@
+---
+format: live-html
+engine: knitr
+webr:
+  packages: 
+    - dplyr
+    - nycflights13
+    - lubridate
+    - palmerpenguins
+---
+
+{{< include ./_extensions/r-wasm/live/_knitr.qmd >}}
+
+
+# [dplyr]{.style-text font-weight="bold" color="#D95F02"} 연습
+
+[@sec-dplyr]장 "dplyr로 데이터 가공"에서 설명한 내용을 연습해 보려고 한다.
+
+## 사용할 데이터셋 
+
+`palmerpenguins` 패키지에 있는 `penguins` 데이터프레임을 사용한다.
+
+```{r}
+#| eval: false
+library(dplyr)
+library(palmerpenguins)
+```
+
+
+```{webr}
+penguins
+```
+
+데이터의 전체적인 구조와 데이터 타입 확인한다.
+
+
+```{webr}
+#| autorun: true
+glimpse(penguins)
+```
+
+## 열 선택(select)
+
+- 열 선택: `select()` 함수
+- 열 선택 방법: 다양한 방식으로 열을 선택할 수 있다. [@sec-tidy-select]장을 참고하여 익힌다. 
+
+열 이름을 직접 입력하여 선택할 수 있다. `dplyr`은 비표준평가를 사용하기 때문에 열 이름을 지정할 때 따옴표를 사용하지 않는다.
+
+```{webr}
+penguins |>
+    select(species, sex, year)
+```
+
+`변수1:변수3`을 사용하여 열의 범위를 사용할 수 있다.
+
+```{webr}
+penguins |>
+    select(bill_length_mm:body_mass_g)
+```
+
+`!selection`을 사용하면 "제외한 열들"을 선택할 수 있다.
+
+```{webr}
+penguins |>
+    select(!contains("mm"))
+```
+
+## 행 필터(filter)
+
+- 조건에 맞는 행들을 필터링: `filter()` 함수 
+- 조건
+  - `==`, `!=`, `<`, `<=`, `>`, `>=` 등의 비교 연산자와 `&`, `|` 등의 논리 연산자를 사용한다.
+  - `is.na()`, `between()`, `near()` 등의 함수를 사용할 수 있다. 
+
+`species`가 `"Adelie"`인 행을 필터링한다.
+
+```{webr}
+penguins |>
+    filter(species == "Adelie")
+```
+
+`"Adelie"` 종의 평균 체중은 다음과 같다.
+
+```{webr}
+#| autorun: true
+adelie = penguins |>
+    filter(species == "Adelie")
+mean(adelie$body_mass_g, na.rm = TRUE)
+```
+
+`"Adelie"` 펭귄에서, 평균 체중 이상의 것들만 추출한다. 
+
+```{webr}
+penguins |>
+    select(species, body_mass_g) |>
+    filter(species == "Adelie", body_mass_g >= mean(body_mass_g, na.rm = TRUE))
+```
+
+`species`가 `"Adelie"`이거나 `"Chinstrap"`인 행을 필터링한다.
+
+```{webr}
+penguins |>
+    filter(species == "Adelie" | species == "Chinstrap")
+```
+
+
+
+## 정렬(arrange)
+
+- 정렬: `arrange()` 함수
+- 정렬 기준: 기준 열을 지정한다. 디폴트는 오름차순(ascending)인데, 내림차순으로 정렬하려면 `desc(열이름)` 함수를 사용한다.
+
+`bill_length_mm`를 기준으로 내림차순으로 정렬한다.
+
+```{webr}
+penguins |>
+    arrange(desc(bill_length_mm))
+```
+
+## 열 이름 변경(rename)
+
+- 열 이름 변경: `rename()` 함수 
+- 열 이름 변경 방법: `new_name = old_name` 형식으로 지정한다. 
+
+펭귄 데이터프레임에서 `bill_length_mm`을 `bill_length`로, `bill_depth_mm`을 `bill_depth`로, `flipper_length_mm`을 `flipper_length`로, `body_mass_g`를 `body_mass`로 변경한다.
+
+```{webr}
+penguins |>
+    rename(
+        bill_length = bill_length_mm,
+        bill_depth = bill_depth_mm,
+        flipper_length = flipper_length_mm,
+        body_mass = body_mass_g
+    )
+```
+
+- 열 이름을 문자열로 가지고 와서, 이 문자열에 대하여 어떤 함수를 적용한 후의 값을 열 이름으로 사용하고 싶을 때는 `rename_with()` 함수를 사용한다.
+
+펭귄 데이터프레임의 모든 열 이름을 대문자로 바꾼다.
+
+```{webr}
+penguins |>
+    rename_with(toupper)
+```
+
+## 열 추가(mutate)
+
+- 열 추가: `mutate()` 함수
+  - 기존 데이터프레임에 새로운 열을 추가한다.
+- 열 추가 방법: `new_name = expression` 형식으로 지정한다.
+
+펭귄 데이터셋에 `body_mass_kg`라는 열을 추가한다. 이 열은 `body_mass_g`를 1000으로 나눈 값이다.
+
+```{webr}
+penguins |>
+    select(body_mass_g) |>
+    mutate(body_mass_kg = body_mass_g / 1000) 
+```
+
+
+
+
+## 그룹화(group_by)와 요약(summarize)
+
+- 그룹화: `group_by()` 함수
+- 요약: `summarize()` 또는 `summarise()` 함수
+
+전체 그룹을 소그룹으로 나누고, 각 소그룹에 대해 함수를 적용하여 요약한 다음, 그것을 하나의 데이터프레임으로 반환한다. 
+
+
+펭귄의 `species`별로 `body_mass_g`의 평균을 구한다.
+
+```{webr}
+penguins |>
+    group_by(species) |>
+    summarize(mean_body_mass = mean(body_mass_g, na.rm = TRUE))
+```
+
+- `summarise()` 함수 안에서 요약에 사용할 수 있는 함수들은 다음과 같다. 
+  - `n()`: 개수
+  - `mean()`: 평균
+  - `median()`: 중앙값
+  - `sd()`: 표준편차
+  - `var()`: 분산
+  - `min()`: 최솟값
+  - `max()`: 최댓값
+  - `sum()`: 합계
+  - `first()`: 첫 번째 값
+  - `last()`: 마지막 값
+  - `nth()`: n번째 값
+  - `n_distinct()`: 고유한 값의 개수
+  - `quantile()`: 분위수
+  - `IQR()`: 사분위수 범위
+  
+펭귄의 `species`별로 카운트와 `body_mass_g`의 평균을 구한다.
+  
+```{webr}
+penguins |>
+    group_by(species) |>
+    summarize(count = n(), mean_body_mass = mean(body_mass_g, na.rm = TRUE))
+```
+
+펭귄의 `species`로 나눠서 볼 때 `body_mass_g`가 가장 큰 값과 작은 값을 구한다.
+
+```{webr}
+penguins |>
+    group_by(species) |>
+    summarize(max_body_mass = max(body_mass_g, na.rm = TRUE), min_body_mass = min(body_mass_g, na.rm = TRUE))
+```
+
+정렬을 사용하여 `body_mass_g`가 가장 큰 값과 작은 값을 구한다.
+
+```{webr}
+penguins |>
+    filter(!is.na(body_mass_g)) |>
+    group_by(species) |>
+    arrange(desc(body_mass_g)) |>
+    summarise(
+        max_body_mass = first(body_mass_g),
+        min_body_mass = last(body_mass_g))
+```
+
+위 함수들을 모두 n개의 값을 가진 벡터에 적용되어 1개의 값을 반환하는 함수들이다(reducing function). 
+
+
+## 그룹화(group_by)와 재구성(reframe)
+
+- 그룹화: `group_by()` 함수
+- 재구성: `reframe()` 함수는 `summarise()`와 비슷하지만, 여러 개의 값을 반환하는 요약 함수를 사용할 때 편리하다. 
+
+`species`별로 그을 나누고, `range` 함수르로 가지고 `body_mass_g`의 최솟값과 최댓값을 구한다.
+
+```{webr}
+penguins |>
+    group_by(species) |>
+    reframe(
+        body_mass_range = range(body_mass_g, na.rm = TRUE),
+        bill_length_range = range(bill_length_mm, na.rm = TRUE)
+    )
+```
+
+숫자형 벡터의 개수, 평균, 표준편차를 구하는 사용자 정의함수를 만들어 보자(그다지 훌륭한 예는 아니다). 
+
+```{webr}
+#| autorun: true
+summary_fn <- function(x) {
+    c(
+        n = length(x),
+        mean = mean(x, na.rm = TRUE),
+        sd = sd(x, na.rm = TRUE)
+    )
+}
+```
+
+이 함수는 `x`라는 숫자형 벡터를 인자로 받아서, 그 벡터의 개수, 평균, 표준편차를 구하여 반환한다. 이 함수는 `summarise()` 안에서 사용할 수 없다. 이런 경우에는 `reframe()` 함수를 사용한다.
+
+```{webr}
+penguins |>
+    group_by(species) |>
+    reframe(
+        body_mass_summary = summary_fn(body_mass_g),
+        bill_length_summary = summary_fn(bill_length_mm)
+    )
+```
+
+## `summarize()`와 `mutate()` 안에서 여러 열에 함수들을 적용: `across()`
+
+앞에서 본 `summarise()` 함수를 `across()` 함수 없이 단독으로 사용할 때는 다음과 같은 문법에 따라 사용한다.
+
+```.R
+df |> summarise(
+    new_col1 = functionA(old_col1),
+    new_col2 = functionA(old_col2),
+    new_col3 = functionA(old_col3),
+    new_col4 = functionB(old_col4),
+    new_col5 = functionB(old_col5),
+    new_col6 = functionB(old_col6),
+    ...
+))
+```
+
+만약 `old_col1`, `old_col2`, `old_col3`이 모두 숫자형 벡터라든지 뭔가 묶을 수 있는 형태라면, `summarise()` 함수 안에서 `across()` 함수를 사용하여 한꺼번에 요약할 수 있다. 즉, `across()` 함수는 `summarise()` 함수 안에서 tidyselect 문법을 사용하여 **여러 개의 열을 한꺼번에 묶어서** 요약할 수 있도록 해준다.
+
+뿐만 아니라 `across()` 함수의 두번째 인자 `.fns`에 함수는 1개 이상 지정할 수 있으며, 각 열에 이들 함수가 모두 적용된다. 이 인자를 적용하는 방법은 다음과 같다. 
+
+- 함수 이름: `mean`
+- purrr 스타일의 람다 함수
+- `\(x) mean(x, na.rm = TRUE)`처럼 베이스 R 스타일의 무명 함수(anonymous function)
+- `list(mean = mean, median = median)`처럼 여러 개의 함수를 지정할 수 있다. 이 경우에는 각 열에 대해 지정한 함수가 모두 적용된다.
+
+펭귄 데이터셋에서 숫자형 벡터들을 한꺼번에 요약하는 예를 보자.
+
+```{webr}
+penguins |>
+    group_by(species) |>
+    summarise(
+        across(
+            bill_length_mm:body_mass_g, 
+            \(x) mean(x, na.rm = TRUE) 
+        )  
+    )
+```
+
+평균과 표준 편차를 한꺼번에 구하는 예를 보자.
+
+```{webr}
+penguins |>
+    group_by(species) |>
+    summarise(
+        across(
+            bill_length_mm:body_mass_g, 
+            list(mean = \(x) mean(x, na.rm = TRUE), 
+                 sd = \(x) sd(x, na.rm = TRUE)
+            )
+        )  
+    )
+```
+
+## 누적 계산(cummulative calculation)과 순위(rank):mutate() + 벡터화 함수 
+
+누적된 계산을 하려면 `mutate()` 함수와 벡터화 함수를 사용한다. 예를 들어 `cumsum()`은 누적합을 계산하는 벡터화 함수이다. 다음과 같은 함수들을 `mutate()` 함수 안에서 사용하여 누적된 값을 가지는 새로운 열을 추가한다.
+
+- 누적합: `cumsum()`
+- 누적곱: `cumprod()`
+- 누적최솟값: `cummin()`
+- 누적최댓값: `cummax()`
+
+다음과 같은 시계열 데이터에서 이런 누적 계산이 많이 사용된다.
+
+```{webr}
+#| autorun: true
+revenue_data <- tibble(
+  Date = seq(as.Date("2022-01-01"), by = "month", length.out = 12),
+  Revenue = c(11400, 11000, 12500, 13500, 14000, 14500,
+              10000, 10000, 13000, 15000, 14000, 16000)
+)
+revenue_data
+```
+
+누적 매출액을 계산하여 `Cumulative_Revenue`라는 열을 추가한다.
+
+```{webr}
+revenue_data |>
+    mutate(Cumulative_Revenue = cumsum(Revenue))
+```
+
+## 기준에 맞게 그룹화(팩터) 변수 만들기: `if_else()`와 `case_when()`
+
+다음과 같은 데이터프레임을 가지고 시작해 보자.
+
+```{webr}
+#| autorun: true
+df <- tibble(
+  name = c("Alice", "Bob", "Carol", "David", "Eva"),
+  score = c(95, 82, 73, 60, 45)
+)
+df
+```
+
+이 데이터프레임에서 `score`에 따라 `grade`라는 새로운 열을 추가할 것인데, `score`가 `60`점 보다 크면 `pass`, `60`점 이하이면 `fail`로 설정하려고 한다. 이 경우 조건이 하나이기 때문에 `if_else()` 함수를 사용한다.
+
+- `if_else()` 함수
+  - `if_else(조건, 참일 때의 값, 거짓일 때의 값)`
+
+```{webr}
+# if_else를 사용한 등급 부여
+df <- df %>%
+  mutate(
+    grade = if_else(score >= 60, "pass", "fail"),
+    grade = factor(grade, levels = c("pass", "fail"))
+  )
+df
+```
+
+만약 `score`에 따라 `grade`를 `A`, `B`, `C`, `D`, `F`로 나누고 싶다면, 이 경우에는 `case_when()` 함수를 사용한다. 
+
+- `case_when()` 함수
+  - `case_when(조건1 ~ 값1, 조건2 ~ 값2, ...)`
+  - 조건이 여러 개일 때는 `&`와 `|`를 사용하여 조합할 수 있다. 조건은 specific 한 것에서 general 순으로 나열한다. 
+  - 마지막에 `.default = 값`을 사용하면 남은 모든 경우를 처리한다.
+
+  
+
+```{webr}
+# case_when을 사용한 등급 부여
+df <- df %>%
+  mutate(
+    grade = case_when(
+      score >= 90           ~ "A",
+      score >= 80 & score < 90  ~ "B",
+      score >= 70 & score < 80  ~ "C",
+      score >= 60 & score < 70  ~ "D",
+      .default                  = "F"  # 나머지
+    ),
+    grade = factor(grade, levels = c("A", "B", "C", "D", "F")) 
+    # 팩터로 변환
+  )
+
+df
+```
+
+## 결측값 다루기: `na_if()`, `coalesce()`
+
+실제 데이터에는 결측값이 없는 경우가 드물다. R에서는 결측값을 `NA`로 표시한다. 이런 결측값을 다루는 데 유용한 함수들을 소개한다. `dplyr` 패키지의 `coalesce()`와 `na_if()` 함수와 `tidyr` 패키지의 `replace_na()` 함수가 있다.
+
+- `na_if(x, v)`: 벡터 `x` 요소의 값과 벡터 `v` 요소 값이 같으면 `NA`로 변환한다. 
+- `coalesce()`: 여러 개의 벡터를 가지고, 각 위치에서 첫 번째로 `NA`가 아닌 값을 반환한다.
+
+
+이 함수들은 벡터화된 함수여서(vectorized functions), 처음에는 함수 도움말을 읽어도 이해가 쉽지 않을 수 있다. 
+
+### `na_if()`
+
+먼저 `na_if()`를 사용법이다.  
+
+```{webr}
+#| autorun: true
+x <- c(1, 2, 3, 4, 5)
+y <- c(5, 4, 3, 2, 1)
+na_if(x, y)
+```
+
+3번째 값이 `NA`로 바뀌는 것은 `x`의 3번째 값과 `y`의 3번째 값이 같기 때문이다. 다음을 보자. 
+
+```{webr}
+#| autorun: true
+na_if(x, 3)
+```
+
+이 경우에는 두 번째 `3`이 스칼라 값이기 때문에서, 앞의 `x`와 맞추려고 recyling되어서 암묵적으로 `c(3, 3, 3, 3, 3)`으로 바뀌어서 `x`의 세 번째 값이 `NA`로 바뀌게 된다.
+
+그래서 `na_if(x, 3)`을 읽으면, `x`에서 값이 `3`인 경우라면 `NA`로 바꿔라라는 의미가 된다.
+
+따라서 이 함수는 다음과 같이 결측값을 `999` 등으로 코딩한 것을 `NA`로 바꿀 때 유용하게 사용할 수 있다.
+
+```{webr}
+# 예시 데이터프레임
+df <- tibble(
+  name = c("Alice", "Bob", "Carol", "David"),
+  score = c(85, 999, 70, 999)
+)
+
+# 999를 NA로 바꾸기
+df <- df %>%
+  mutate(
+    score_clean = na_if(score, 999)
+  )
+df
+```
+
+### `coalesce()`
+
+`coalesce()`는 여러 개의 벡터를 가지고, 각 위치에서 첫 번째로 `NA`가 아닌 값을 반환한다.
+
+이 함수의 사용법을 보자.
+
+```{webr}
+#| autorun: true
+x <- c(1, 3, 5, NA, 7, NA)
+x
+```
+
+```{webr}
+#| autorun: true
+coalesce(x, 0L)
+```
+
+결국 `coalesce(x, 0L)`은 `x`에서 `NA`의 값을 `0`으로 대체한다. 이 의미가 "`coalesce()`는 여러 개의 벡터를 가지고, 각 위치에서 첫 번째로 `NA`가 아닌 값을 반환한다."라는 의미와 어떻게 연결되지는 보자. 
+
+`colacese(x, 0L)`은 다음 두 벡터를 가지고 비교한다. 
+
+```.R
+c(1, 3, 5, NA, 7, NA)
+c(0, 0, 0, 0, 0, 0)
+```
+
+`1`, `3`, `5`는 `NA`가 아니기 때문에 `x`의 값을 그대로 가져온다. 그 다음은 `NA`이기 때문에 그 다음 벡터에서 `NA`가 아닌 `0`을 가지고 온다. `7`은 그대로 가지고 오고, 마지막 `NA`는 `0`을 가지고 온다.
+
+```{webr}
+a <- c(1, 3, 5, NA, 7, NA)
+b <- c(0, 0, NA, NA, 9, NA)
+c <- c(10, 20, 30, 40, 50, 60)
+coalesce(a, b, c)
+```
+
+이것은 다음과 같은 3개의 벡터의 요소값을 서로 비교한다.
+
+```.R
+c(1, 3, 5, NA, 7, NA)
+c(0, 0, NA, NA, 9, NA)
+c(10, 20, 30, 40, 50, 60)
+```
+`1`, `3`, `5`는 `NA`가 아니기 때문에 `a` 값을 그대로 가져온다. 그 다음은 `NA`이기 때문에 그 다음 벡터 `b`에서 값을 가지고 오려 했으나 역시 `NA`여서 그 다음 벡터 `c`에서 `40`을 가지고 온다. `7`은 그대로 가지고 온다. 마지막도 벡터 `a`, `b`의 값은 모두 `NA`이기 때문에 `c`에서 `60`을 가지고 온다.
+
+## 정리 
+
+`dplyr` 패키지의 주요 함수들을 정리하였다. 이 외에도 다양한 함수들이 있으니, [dplyr 패키지 문서](https://dplyr.tidyverse.org/)를 참고하기 바란다.
+
+
+
+
+
+
+
+
+
+
+

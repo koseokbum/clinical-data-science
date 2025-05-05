@@ -10,9 +10,6 @@
 
 ![R 로고](https://www.r-project.org/logo/Rlogo.png){#fig-r-logo width="30%" fig-align="center"}
 
-{{< video https://youtu.be/XcBLEVknqvY?si=DOhWseyGPffdRKCp  >}}
-
-
 ## R 설치 
 
 - 오픈 소스로 누구나 무료로 사용할 수 있다. 

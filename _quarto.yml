@@ -1,12 +1,21 @@
 project:
   type: book
-lang: "ko"
+language: _language-ko.yml
+
+
 book:
   title: "SVH Neurology Code, Stats & AI"
   page-footer: "The Catholic University of Korea, ST. Vincent’s Hospital, Department of Neurology" 
-  author: "Clinical Data Scientists, Department of Neurology, St. Vincent's Hospital"
-  # date: today
+  author:
+  - name: "임상 데이터 과학팀"
+    affiliation: 
+      - name: 성빈센트병원, 신경과
+        city: Suwon-si
+        state: Gyeonggi-do
+        country: Republic of Korea
+        url: https://www.cmcvincent.or.kr/page/main
   reader-mode: true
+  repo-url: "https://github.com/koseokbum/clinical-data-science"
   # cover-image: "images/cds.png"
   sidebar:
     logo: "images/cds.svg"
@@ -21,43 +30,46 @@ book:
         - factors.qmd
         - condition-function.qmd
         - packages.qmd
-    - part: "R 언어를 더욱 강력하게: tidyverse의 세계"
+        - formula.qmd
+    - part: tidyverse.qmd
       chapters:
         - tidydata.qmd
-        # - intro-tidyverse.qmd
+        - tidyr.qmd
         - dplyr.qmd
+        - dplyr-exercise.qmd
+        - tidyselection.qmd
         - relational-dplyr.qmd
         - windowing.qmd
+        - stringr.qmd
+    - part: visualize.qmd
+      chapters: 
         - ggplot2.qmd
-        # - lubridate.qmd
-        # - stringr.qmd
 
-    # - part: "Python 언어"
-    #   chapters:
-    #     - object.qmd
-        
-        # - super-stars.qmd
     - part: "의학 통계"
       chapters: 
         # - basic-stats.qmd
         - descriptive.qmd
         - gtsummary-descriptive.qmd
         - clt.qmd
+    - part: "Tidymodels을 사용한 통계 분석"
+      chapters:
+        - infer.qmd
+
     - references.qmd
 
 
 bibliography: references.bib
 lightbox: true
 filters: 
-  - webr
   - style-text
 engine: knitr
 
 format:
-  html:
+  live-html:
     theme:
-      - cosmo
-      - brand
+      light: cosmo
+      dark: darkly
+    code-link: true
 
 
 

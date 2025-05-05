@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+_publish.yml
 _book/
 
 /.quarto/

@@ -1,4 +1,4 @@
-# [R package]{.style-text font-weight="bold" color="#FF6972"} 기초 
+# [R package]{.style-text font-weight="bold" color="#1B9E77"} 기초 
 
 R의 핵심은 아주 작다. 그 핵심을 보통 `base R`이라고 부른다. R의 가장 큰 장점의 하나는 이 `base R`에 다양한 기능을 추가하여 사용할 수 있는 패키지(package)가 다양하다는 것이다. 
 

@@ -1,4 +1,4 @@
-# 벡터([vector]{.style-text font-weight="bold" color="#FF6972"})의 기초 
+# 벡터([vector]{.style-text font-weight="bold" color="#1B9E77"})의 기초 
 
 R 언어는 통계 계산을 염두에 두고 설계된 언어답게, 하나의 값이 아니라 여러 값들을 모은 벡터(vector)라는 데이터 타입을 제공한다. 모든 함수가 그런 것은 아니지만, 많은 함수들이 벡터를 처리할 수 있는 기능을 제공한다. 따라서 R 언어를 잘 활용하기 위해서는 벡터와 나중에 설명할 데이터프레임(`data.frame`)을 잘 이해하는 것이 필수이다. 
 

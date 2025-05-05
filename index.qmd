@@ -1,45 +1,72 @@
 # 서문 {.unnumbered}
 
-이것은 임상 데이터 과학(Clinical Data Science)과 관련된 교육 자료를 공유하기 위한 사이트이다.
+임상 데이터 과학 사이트를 방문하여 주셔서 감사합니다. 이 자료는 임상 데이터 과학(Clinical Data Science) 교육 자료를 정리하여 공유하기 위해 만들었습니다. 다루는 내용은 다음과 같습니다.
 
 -   R 프로그래밍 언어
--   Python 프로그래밍 언어
+-   (나중에) Python 프로그래밍 언어
+-   (나중에) SQL과 DuckDB
 -   통계학
--   AI
 
-2025년 4월말 현재 Python 프로그래밍 언어 관련 자료는 아직 없음.
+
+R 언어나 Python 언어의 세계는 우주와 같이 넓습니다. 넓은 세계에서 처음 시작하는 사람들은 한참을 헤매고 나서야 길을 찾는 경우가 많습니다. 물론 그런 행위도 가치가 없는 것은 아니지만, 바쁜 의료인들은 지레 포기하게 만들 수도 있습니다. 그래서 이 사이트는 뭔가를 바로 할 수 있게 Tidyverse, Tidymodels와 같이 일관된 접근법을 제공하는 도구들을 중심으로 설명합니다.
+
+요즘에는 AI coding assistant가 발전하여 이런 작업을 하기에도 편리해졌습니다. 어떤 기초 개념을 소개하는 예시 등을 만들 때는 이런 도구들이 큰 도움이 됩니다. 따라서, 이 사이트의 내용들은 이런 도구들의 도움도 상당히 반영되어 있습니다. 
+
+이 사이트는 **오픈 소스 과학기술 출판 시스템** [Quarto](https://quarto.org)를 사용하여 만들었습니다. **재현가능한 방식(computational reproducibility)**으로, 논문쓰기와 같은 데이터 작업을 하는 데 최적의 환경을 제공합니다. 마크다운 텍스트와 코드를 적절히 혼합하여 article, book, website, presentation 등을 만들 수 있습니다.
+
+또 웹브라우저에서 바로 코드를 연습할 수 있게 [Quarto Live](https://r-wasm.github.io/quarto-live/)라는 WebAssembly 기능을 사용하여 코드 연습이 많이 필요한 곳에 사용하였습니다.
+
+사용된 R 버전은 다음과 같습니다.
+
+```{r}
+R.version.string
+```
+
+Python 버전은 다음과 같습니다.
+
+```{python}
+import sys
+sys.version
+```
+
+Quarto 버전은 {{< version >}}입니다.
 
 ## 참고/권장 자료
 
-### 통계학
+- 통계학
 
-1. 기초 통계학의 숨은 원리 이해하기, 김권현, 경문사
+    1. 기초 통계학의 숨은 원리 이해하기, 김권현, 경문사
+    2. [Statistical Inference via Data Science](https://moderndive.com)
+    3. [Statistical Thinking for the 21st Century](https://statsthinking21.github.io/statsthinking21-core-site/index.html)
 
-### R 관련
+- R 언어
 
-1.  [Advanced R](https://adv-r.hadley.nz/)
-    -   R 프로그래밍 언어의 프로그래밍 언어로서의 특징을 자세히 설명하는 해들리 위캄의 명저로 웹사이트에서도 누구나 읽을 수 있다.
+    1.  [Advanced R](https://adv-r.hadley.nz/)
+        -   R 프로그래밍 언어의 프로그래밍 언어로서의 특징을 자세히 설명하는 해들리 위캄의 명저로 웹사이트에서도 누구나 읽을 수 있다.
 
-2.  [R for Data Science (2e)](https://r4ds.hadley.nz/)
-    -   R 언어를 사용하여 데이터 과학을 수행하는 전반적인 과정을 다룬다.
-    -   [The tidy tools manifesto](https://cran.r-project.org/web/packages/tidyverse/vignettes/manifesto.html)에 따른 일관된 접근법을 취한다.
-    
-3.  [Fundamentals of Data Visualization](https://clauswilke.com/dataviz/preface.html)
-    -   아름다운 데이터 시각화 방법을 설명한다.
+    2.  [R for Data Science (2e)](https://r4ds.hadley.nz/)
+        -   R 언어를 사용하여 데이터 과학을 수행하는 전반적인 과정을 다룬다.
+        -   [The tidy tools manifesto](https://cran.r-project.org/web/packages/tidyverse/vignettes/manifesto.html)에 따른 일관된 접근법을 취한다.
+        
+    3.  [Fundamentals of Data Visualization](https://clauswilke.com/dataviz/preface.html)
+        -   아름다운 데이터 시각화 방법을 설명한다.
 
-4. R로 하는 빅 데이터분석 (제3판), 김권현 저, 숨은원리
+    4. R로 하는 빅 데이터분석 (제3판), 김권현 저, 숨은원리  
 
 
+- Python 언어
 
-### Python 관련
+    1.  [The Python Tutorial](https://docs.python.org/3/tutorial/index.html)
+        -   웹사이트에서 (완전한 것은 아니지만) 한글로도 읽을 수도 있다.
 
-1.  [The Python Tutorial](https://docs.python.org/3/tutorial/index.html)
-    -   웹사이트에서 (완전한 것은 아니지만) 한글로도 읽을 수도 있다.
-2.  [전문가를 위한 파이썬](https://product.kyobobook.co.kr/detail/S000214847242)
-    -   Python 언어의 특징을 자세히 설명
-3.  [Python for Data Analysis, 3E](https://wesmckinney.com/book/)
-    -   데이터 과학에 필요한 파이썬을 설명한다.
-    -   웹사이트에서 무료로 읽을 수 있다.
+    2.  [전문가를 위한 파이썬](https://product.kyobobook.co.kr/detail/S000214847242)
+        -   Python 언어의 특징을 자세히 설명
 
-### AI 관련 
+    3.  [Python for Data Analysis, 3E](https://wesmckinney.com/book/)
+        -   데이터 과학에 필요한 파이썬을 설명한다.
+        -   웹사이트에서 무료로 읽을 수 있다.
 
+
+## 원문 소스 
+
+- 이 사이트의 원문, 데이터 소스는 [GitHub](https://github.com/koseokbum/clinical-data-science)에서 볼 수 있다. 왼쪽 사이드바에서 깃허브 아이콘을 클릭해도 쉽게 이동할 수 있다.

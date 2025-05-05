@@ -1,0 +1,49 @@
+# [infer]{.style-text font-weight="bold" color="#66A61E"} 패키지로 가설 검정 
+
+4 main verbs
+
+- `specify()`: 변수 또는 변수 사이의 관계를 지정
+- `hypothesize()`: 귀무 가설을 선언 
+- `generate()`: 귀무 가설을 반영하는 데이터 생성
+- `calculate()`: 생성된 데이터로부터 통계량의 분포를 계산 
+
+
+![](https://raw.githubusercontent.com/tidymodels/infer/main/figs/ht-diagram.png)
+
+
+
+
+```{r}
+library(infer)
+library(tidyverse)
+data(gss)
+glimpse(gss)
+```
+
+```{r}
+F_hat <- gss |>
+    specify(age ~ partyid) |>
+    calculate(stat = "F")
+F_hat
+```
+
+```{r}
+null_dist <- gss |>
+    specify(age ~ partyid) |>
+    hypothesize(null = "independence") |>
+    generate(reps = 1000, type = "permute") |>
+    calculate(stat = "F")
+null_dist
+```
+
+```{r}
+visualize(null_dist) +
+    shade_p_value(obs_stat = F_hat, direction = "greater")
+```
+
+
+```{r}
+null_dist %>%
+    get_p_value(obs_stat = F_hat, direction = "greater")
+```
+

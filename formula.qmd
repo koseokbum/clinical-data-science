@@ -1,0 +1,175 @@
+# 통계를 하려면 꼭 알아야 하는 R 포뮬러([Formula]{.style-text font-weight="bold" color="#1B9E77"})
+
+R 언어에서는 통계적 모델(statistical model)을 표현하기 위해 **포뮬러(formula)**를 사용한다. R 언어의 관점에서는 이것 역시 벡터나 데이터프레임, 리스트와 같은 객체의 한 종류이다.
+
+포뮬러는 모델의 독립변수와 종속변수 간의 관계를 나타내는 상징적인 수식이다. 여기서 **상징적 수식**이라고 하는 것은 보통의 수학적 표현이 아니라는 뜻이다. R 언어에서 특별한 역할을 하는 표현식의 일종이다.
+
+R에서 많은 통계 분석 함수나 그래픽 함수들이 이 포뮬러를 사용하기 때문에 잘 이해할 필요가 있고, 실제로도 많은 데이터 분석 작업에서 포뮬러를 사용한다.
+
+
+## R 포뮬러로 모델 정의하기
+
+```{r}
+f <- y ~ x + b
+class(f)
+```
+
+`~` 기호를 중심으로 왼쪽은 종속 변수(dependent variable), 오른쪽은 독립 변수(independent variable)를 표시한다. 대부분 이런 변수들은 데이터프레임의 열 이름을 사용한다. 이 `f`라는 객체는 `formula` 클래스의 객체이다. 
+
+포뮬러를 정의할 때는 [@tbl-formula]에 있는 기호들을 사용한다.
+
+
+```{r}
+#| echo: false
+#| label: tbl-formula
+#| tbl-cap: R 포뮬러 기호 정의
+library(tibble)
+library(knitr)
+df <- tibble::tribble(
+    ~기호, ~역할, ~예시, ~통계적의미,
+    "~", "포뮬러의 좌변과 우변을 구분", "y ~ x", "regress y on x",
+    "+", "포뮬러에 변수 추가함", "y ~ x + z", "regress y on x and z",
+    ".", "모든 변수를 사용", "y ~ .", "regress y on all other variables in a data frame",
+    "-", "포뮬러에서 변수를 뺌", "y ~ . - x", "regress y on all other variables except x",
+    "1", "Y 절편 포함", "y ~ x - 1", "regress y on x without an intercept",
+    ":", "상호작용", "y ~ x + z + x:z", "regress y on x, z, and the product x times z",
+    "*", "factor crossing", "y ~ x * z", "regress y on x, z, and the product x times z",
+    "^", "고차원 상호작용", "y ~ (x + z + w)^3", "regress y on x, z, w, all two-way interactions, and the three-way interactions",
+    "I()", "안에 수식을 진짜 수식으로 사용", "y ~ x + I(x^2)", "regress y on x and x squared"
+)
+kable(df)
+```
+
+
+- `*` 기호는 factor crossing을 의미한다. `a*b`는 `a + b + a:b`와 같다. 
+
+- `^` 기호는 고차원 상호작용을 의미한다. `(a+b+c)^2`는 `a + b + c + a:b + a:c + b:c`와 같다. 
+- `I()` 기호는 안에 있는 것이 진짜 수식으로 사용된다는 것을 의미한다. 
+
+
+## 예제로 살펴 보기 
+
+다음 자료는 [Tidymodeling with R](https://www.tmwr.org/base-r) 책에서 인용하였다. 
+
+귀뛰라미(crickets) 데이터는 온도와 귀뛰라미의 초당 소리 횟수 간의 관계를 나타내는 데이터이고, 2개의 아종별에 대해 조사했다.
+```{r}
+#| message: false
+library(tidyverse)
+
+data(crickets, package = "modeldata")
+names(crickets)
+
+# Plot the temperature on the x-axis, the chirp rate on the y-axis. The plot
+# elements will be colored differently for each species:
+ggplot(
+    crickets,
+    aes(x = temp, y = rate, color = species, pch = species, lty = species)
+) +
+    # Plot points for each data point and color by species
+    geom_point(size = 2) +
+    # Show a simple linear model fit created separately for each species:
+    geom_smooth(method = lm, se = FALSE, alpha = 0.5) +
+    scale_color_brewer(palette = "Paired") +
+    labs(x = "Temperature (C)", y = "Chirp Rate (per minute)")
+```
+
+위 그래프를 보면 온도와 귀뛰라미의 초당 소리 횟수 간의 선형 관계가 있고, 각 아종이 서로 다르다는 것을 볼 수 있다. 
+
+먼저 `lm()` 함수를 사용하는데, 이 함수는 R 포뮬러와 데이터프레임을 인자로 받는다. 먼저 소리 횟수와 온도와 관계를 R 포뮬러로 다음과 같이 표현할 수 있다. 
+
+```.R
+rate ~ temp
+```
+
+종속 변수 `rate`가 독립 변수 `temp`에 의해 설명된다는 것을 의미한다. 
+
+만약 아종에 대한 변수를 독립 변수로 추가하려면 다음과 같은 포뮬러를 사용할 수 있다. 
+
+```.R
+rate ~ temp + species
+```
+
+이 경우 `species`는 범주형 변수이다. 이 포뮬러는 온도와 아종에 대한 영향을 동시에 고려한다는 것을 의미한다. 이런 범주형 변수는 모델 fitting 과정에서 숫자형으로 변환된 다음 계산된다. 
+
+`temp`와 `species`이 상호작용(interaction)을 하는 경우 다음과 같은 포뮬러를 사용할 수 있다. 변수들간의 상호작용은 콜론(`:`)으로 표현한다. 
+
+```.R
+rate ~ temp  + species + temp:species
+```
+
+위 포뮬러는 다음과 같은 단축형으로도 표현할 수 있는데, 모두 같은 의미이다.
+
+```.R
+rate ~ temp * species
+rate ~ (temp + species)^2
+```
+
+
+이제 모델 fitting을 해보자. 
+
+```{r}
+interaction_fit <- lm(rate ~ (temp + species)^2, data = crickets)
+```
+
+이렇게 해서 만들어진 `interaction_fit` 객체는 여러 정보를 담고 있다. 
+
+```{r}
+interaction_fit
+```
+
+```{r}
+summary(interaction_fit)
+```
+
+이제 모델을 시각화해보자. 
+
+```{r}
+# Place two plots next to one another:
+par(mfrow = c(1, 2))
+
+# Show residuals versus predicted values:
+plot(interaction_fit, which = 1)
+
+# A normal quantile plot on the residuals:
+plot(interaction_fit, which = 2)
+```
+
+
+인터랙션 term이 필요한지를 확인하기 위해 인터랙션 term이 없는 모델을 보자. 
+
+```{r}
+main_effects_fit <- lm(rate ~ temp + species, data = crickets)
+```
+
+인터랙션이 있는 모델과 없는 모델의 차이를 `anova()` 함수를 사용하여 비교할 수 있다. 
+
+```{r}
+anova(main_effects_fit, interaction_fit)
+```
+
+
+P-값이 0.25로 인터랙션 term이 필요하지 않다는 귀무 가설을 기각할 수 없다. 
+
+```{r}
+summary(main_effects_fit)
+```
+
+이렇게 만들어진 모델을 사용하여 예측(prediction)을 할 수 있다. 
+
+```{r}
+new_values <- data.frame(species = "O. exclamationis", temp = 15:20)
+predict(main_effects_fit, new_values)
+```
+
+- [aov()와 anova() 함수의 차이](https://www.geeksforgeeks.org/when-to-use-aov-vs-anova-in-r/)
+
+
+## R 포뮬러가 하는 일 
+
+- 모델에 사용되는 변수(열) 정의 
+- 팩터 형 변수 열을 fitting 할 때 적절한 형태로 변환 
+- 변수(열)의 역할 정의: 종속 변수 vs 독립 변수 
+
+## 참고 자료 
+
+- [R Formula Tutorial](https://www.datacamp.com/tutorial/r-formula-tutorial)

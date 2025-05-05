@@ -1,4 +1,4 @@
-# 논문, 발표에 바로 사용할 수 있는 테이블: `gtsummary` 패키지
+# 논문, 발표에 바로 사용할 수 있는 테이블: [gtsummary]{.style-text font-weight="bold" color="#E7298A"} 패키지
 
 여기서는 논문에 바로 사용할 수 있는 표(table)을 만들어 주는 `gtsummary`라는 패키지를 자세히 소개하고자 한다. 이 패키지는 
 메모리얼 슬론 케서린 암센터(Memorial Sloan Kettering Cancer Center)의 생물정보학팀이 주축이 되어 개발한 한것으로, 이 패키지를 사용하면 (의학) 논문에 바로 사용할 수 있는 뛰어난 테이블 만들 수 있다.

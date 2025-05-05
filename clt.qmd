@@ -1,3 +1,9 @@
+---
+engine: knitr
+---
+
+{{< include ./_extensions/r-wasm/live/_knitr.qmd >}}
+
 # Central Limit Theorem(중심 극한 정리)
 
 ## 히스토그램 
@@ -5,7 +11,7 @@
 - 구간을 만들고, 구간에 해당되는 값들의 개수를 카운트하여 막대로 표시한 그래프 
 - 분포(distribution)을 만들 때 좋다.
 
-```{webr-r}
+```{webr}
 x <- rnorm(100)
 x
 hist(x)
@@ -43,7 +49,7 @@ $$
 
 ## R 코드 시뮬레이션
 
-```{webr-r}
+```{webr}
 # Parameters
 set.seed(123)
 n_samples <- 1000 # 1000개의 샘플 그룹
@@ -62,7 +68,7 @@ sample_means[1:100]
 ```
 
 
-```{webr-r}
+```{webr}
 hist(population, main = "모집단의 분포", xlab = "Value", col = "lightblue")
 hist(sample_means, main = "표본 평균의 분포\nDistribution of Sample Means", xlab = "Sample Mean", col = "lightgreen")
 ```

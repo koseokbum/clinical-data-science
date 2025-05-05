@@ -1,4 +1,4 @@
-# [Tidy Data]{.style-text font-weight="bold" color="#014275"}의 개념과 데이터 수집
+# [Tidy Data]{.style-text font-weight="bold" color="#D95F02"}의 개념과 데이터 수집 {#sec-tidy-data}
 
 R 언어의 핵심을 구성하는 `base R`은 크기도 얼마되지 않는다. 반면 여러 용도로 개발된 수많은 패키지들이 있어 효용성이 증폭된다. R의 이러한 `organic`한 특성은 다양한 방법으로 확장되는 장점이 있는 반면, 일관성이라는 부분에서는 취약하다. 
 
@@ -30,12 +30,12 @@ R `tidyverse`는 `tidy data`라는 일관된 철학을 바탕으로 개발된 �
 ```{r}
 library(tibble)
 classroom <- tribble(
-  ~name,    ~quiz1, ~quiz2, ~test1,
-  "Billy",  NA,     "D",    "C",
-  "Suzy",   "F",    NA,     NA,
-  "Lionel", "B",    "C",    "B",
-  "Jenny",  "A",    "A",    "B"
-  )
+    ~name,    ~quiz1, ~quiz2, ~test1,
+    "Billy",  NA,     "D",    "C",
+    "Suzy",   "F",    NA,     NA,
+    "Lionel", "B",    "C",    "B",
+    "Jenny",  "A",    "A",    "B"
+)
 classroom
 ```
 
@@ -43,11 +43,11 @@ classroom
 
 ```{r}
 tribble(
-  ~assessment, ~Billy, ~Suzy, ~Lionel, ~Jenny,
-  "quiz1",     NA,     "F",   "B",     "A",
-  "quiz2",     "D",    NA,    "C",     "A",
-  "test1",     "C",    NA,    "B",     "B"
-  )
+    ~assessment, ~Billy, ~Suzy, ~Lionel, ~Jenny,
+    "quiz1",     NA,     "F",   "B",     "A",
+    "quiz2",     "D",    NA,    "C",     "A",
+    "test1",     "C",    NA,    "B",     "B"
+)
 ```
 
 - 같은 데이터이지만 레이아웃은 다르다. 왜 이 두 테이블이 같은 데이터인지를 설명하기에 충분한 행과 열에 대한 개념적인 단어가 충분하지 않다. 겉보기에 더해서, 우리는 테이블에 표시디는 값들의 의미론(semamantic, 의미)을 기술할 수 있는 방법이 필요하다. 
@@ -66,9 +66,9 @@ tribble(
 #| warning: false
 library(tidyr)
 library(dplyr)
-classroom2 <- classroom %>% 
-  pivot_longer(quiz1:test1, names_to = "assessment", values_to = "grade") %>% 
-  arrange(name, assessment)
+classroom2 <- classroom %>%
+    pivot_longer(quiz1:test1, names_to = "assessment", values_to = "grade") %>%
+    arrange(name, assessment)
 classroom2
 ```
 
@@ -150,8 +150,8 @@ relig_income
 - 변수들을 피벗팅할 때, 우리는 새롭게 만들 키-값 열에 대한 이름을 줄 필요가 있다. 피벗에 사용할 열들을 정의하고 나서(이 경우 religion을 제외한 모든 열), 키가 되는 열에 이름을 줄 필요가 있는데 이것은 열 헤더의 값들에 의해서 정의되는 변수의 이름이다. 이 경우에는 `income`이라고 했다. 두 번재는 값 열에 대한 이름으로 `frequency`롤 정했다.
 
 ```{r}
-relig_income %>% 
-  pivot_longer(-religion, names_to = "income", values_to = "frequency")
+relig_income %>%
+    pivot_longer(-religion, names_to = "income", values_to = "frequency")
 ```
 
 ![위 과정을 이해하기 편하게 그림으로 정리함](images/tidyingprocess1.png){#fig-tidyingprocess1}
@@ -168,13 +168,13 @@ billboard
 - 이 데이터셋도 정돈해 보자. 먼저 `pivot_longer()` 함수를 사용하여 넓은 데이터를 길게 만들어 보자. 우리는 `wk1`에서 `wk76` 열을 피봇팅할 할 것이고, 키 이름은 `week`, 값 이름은 `rank`로 주었다.
 
 ```{r}
-billboard2 <- billboard %>% 
-  pivot_longer(
-    wk1:wk76, 
-    names_to = "week", 
-    values_to = "rank", 
-    values_drop_na = TRUE
-  )
+billboard2 <- billboard %>%
+    pivot_longer(
+        wk1:wk76,
+        names_to = "week",
+        values_to = "rank",
+        values_drop_na = TRUE
+    )
 billboard2
 ```
 
@@ -184,11 +184,11 @@ billboard2
 
 ```{r}
 billboard3 <- billboard2 %>%
-  mutate(
-    week = as.integer(gsub("wk", "", week)),
-    date = as.Date(date.entered) + 7 * (week - 1),
-    date.entered = NULL
-  )
+    mutate(
+        week = as.integer(gsub("wk", "", week)),
+        date = as.Date(date.entered) + 7 * (week - 1),
+        date.entered = NULL
+    )
 billboard3
 ```
 
@@ -213,7 +213,7 @@ billboard3 %>% arrange(date, rank)
 
 ```{r}
 # tidyr github 사이트에 있는 tb.csv를 읽도록 코드를 변경함
-tb <- as_tibble(read.csv("https://raw.githubusercontent.com/tidyverse/tidyr/refs/heads/main/vignettes/tb.csv", stringsAsFactors=FALSE))
+tb <- as_tibble(read.csv("https://raw.githubusercontent.com/tidyverse/tidyr/refs/heads/main/vignettes/tb.csv", stringsAsFactors = FALSE))
 tb
 ```
 
@@ -221,21 +221,21 @@ tb
 
 
 ```{r}
-tb2 <- tb %>% 
-  pivot_longer(
-    !c(iso2, year), 
-    names_to = "demo", 
-    values_to = "n", 
-    values_drop_na = TRUE
-  )
+tb2 <- tb %>%
+    pivot_longer(
+        !c(iso2, year),
+        names_to = "demo",
+        values_to = "n",
+        values_drop_na = TRUE
+    )
 tb2
 ```
 
 - 이런 형태의 데이터셋들은 종종 특수한 문자(예를 들어, 하이픈, 언더스코어, 콜론 등)로 구분되는 열 이름을 가지거나 이 경우처럼 고정된 폭을 가지는 경우가 많다. `separate()` 함수는 복합 변수를 개별 변수로 분리하는 데 사용된다. 값의 분리를 위해 정규 표현식(regular expression)을 사용할 수도 있고, 디폴트로 이와 같은 비-알파벳-또는-숫자로 나누도록 설정되어 있다. 또는 어떤 문자의 위치를 벡터로 지정할 수 있다. 이 경우에는 첫 번재 문자 바로 다음을 기준으로 쪼개도록 한다.
 
 ```{r}
-tb3 <- tb2 %>% 
-  separate(demo, c("sex", "age"), 1)
+tb3 <- tb2 %>%
+    separate(demo, c("sex", "age"), 1)
 tb3
 ```
 
@@ -246,11 +246,11 @@ tb3
 
 ```{r}
 tb %>% pivot_longer(
-  !c(iso2, year), 
-  names_to = c("sex", "age"), 
-  names_pattern = "(.)(.+)",
-  values_to = "n", 
-  values_drop_na = TRUE
+    !c(iso2, year),
+    names_to = c("sex", "age"),
+    names_pattern = "(.)(.+)",
+    values_to = "n",
+    values_drop_na = TRUE
 )
 ```
 
@@ -269,13 +269,13 @@ weather
 - 먼저 `pivot_longer()`로 일자열들을 피벗팅한다.
 
 ```{r}
-weather2 <- weather %>% 
-  pivot_longer(
-    d1:d31, 
-    names_to = "day", 
-    values_to = "value", 
-    values_drop_na = TRUE
-  ) 
+weather2 <- weather %>%
+    pivot_longer(
+        d1:d31,
+        names_to = "day",
+        values_to = "value",
+        values_drop_na = TRUE
+    )
 weather2
 ```
 
@@ -286,17 +286,17 @@ weather2
 - 데이터 클리닝을 좀 더 한다.
 
 ```{r}
-weather3 <- weather2 %>% 
-  mutate(day = as.integer(gsub("d", "", day))) %>%  #day 열에서 얖의 "d" 제거 
-  select(id, year, month, day, element, value)
+weather3 <- weather2 %>%
+    mutate(day = as.integer(gsub("d", "", day))) %>% # day 열에서 얖의 "d" 제거
+    select(id, year, month, day, element, value)
 weather3
 ```
 
 - 이 데이터셋은 거의 정돈되어 가고 있으나, `element` 열은 아직 하나의 변수가 아니다. 이 열은 변수들의 이름을 저장하고 있다. 이 문제를 해결하기 위해서는 데이터를 넓게 만드는 `pivot_wider()` 함수가 필요하다. 이 함수는 `pivot_longer()`와 정반대의 일을 해서, `element`를 피벗팅하여 그 값들을 여러 행으로 펼친다.
 
 ```{r}
-weather3 %>% 
-  pivot_wider(names_from = element, values_from = value)
+weather3 %>%
+    pivot_wider(names_from = element, values_from = value)
 ```
 
 - 이제 정도되었다. 각 열은 하나의 값으로 되어 있고, 각 행은 하루를 표현한다.
@@ -311,9 +311,9 @@ weather3 %>%
 - 이 데이터셋을 아티스트와 곡명을 저장하는 노래 데이터셋과 주별 해당 곡의 순위를 나타내는 랭킹 데이터셋으로 나눠보자. 먼저 `song` 데이테셋을 추출하자.
 
 ```{r}
-song <- billboard3 %>% 
-  distinct(artist, track) %>%
-  mutate(song_id = row_number())
+song <- billboard3 %>%
+    distinct(artist, track) %>%
+    mutate(song_id = row_number())
 song
 ```
 
@@ -321,8 +321,8 @@ song
 
 ```{r}
 rank <- billboard3 %>%
-  left_join(song, c("artist", "track")) %>%
-  select(song_id, date, week, rank)
+    left_join(song, c("artist", "track")) %>%
+    select(song_id, date, week, rank)
 rank
 ```
 

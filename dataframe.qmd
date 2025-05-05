@@ -1,4 +1,4 @@
-# 데이터프레임([data.frame]{.style-text font-weight="bold" color="#FF6972"})의 기초 
+# 데이터프레임([data.frame]{.style-text font-weight="bold" color="#1B9E77"})의 기초 
 
 여기서는 R의 가장 중요한 데이터 구조라 할 수 있는 데이터프레임(data.frame)에 대해서 설명한다.
 
