@@ -1,0 +1,693 @@
+# 그래프 테마([theme]{.style-text font-weight="bold" color="#7570B3"}) 커스터마이징 
+
+`ggplot2` 패키지로 그래프를 만들 때, 데이터와 연관된 프로세스가 끝나면 테마 등 주변의 요소들을 조정하는 작업을 하게 된다. 여기선 이 주변 요소들을 원하는 바대로 조정하는 작업을 설명한다. `ggplot2` 패키지 자체에서 제공하는 기능도 있고, 여러 목적으로 다양한 확장 패키지들도 많이 개발되어 있어 적절한 곳에서 소개하고자 한다. 
+
+## (한글 포함) 글자
+
+`ggplot2` 패키지로 그래프를 만들어 논문을 투고한다고 생각해 보자. 그러면 저널 출판사에서 그래프와 관계된 문자의 크기, 폰트 등을 지정해 줄 것이고 그대로 그래프를 만들어야 할 것이다. 이 문제를 해결하는 방법을 설명하고자 한다. 
+
+### `showtext` 패키지를 사용하여 한글을 포함한 폰트 패밀리 지정
+
+`showtext` 패키지는 한글을 포함한 폰트를 지정하는 데 사용되는 패키지이다. 과정은 다음과 같다. 
+
+1. `showtext` 패키지를 설치하고 로드한다. 
+2. 폰트를 선택한다.
+   - 현재 컴퓨터에 있는 폰트 사용: `font_add()` 함수를 사용하여 현재 컴퓨터에 설치된 폰트 파일을 지정하고, 현재 R 세션에서 이 폰트에 대한 이름을 붙인다. 
+   - 구글 폰트 사용: `font_add_google()` 함수를 사용하여 인터넷에 있는 [구글 폰트](https://fonts.google.com/)에서 사용할 폰트를 선택하고, 현재 R 세션에서 이 폰트에 대한 이름을 붙인다.
+3. `showtext_auto()` 함수를 사용하여 현재 R 세션에 이 폰트를 사용하도록 지시한다. 
+4. `ggplot2` 패키지(또는 base R 그래프 함수로) 그래프를 만들 때 이 폰트를 사용한다. 
+
+
+```{r}
+library(ggplot2)
+library(showtext)
+```
+
+다음은 [구글 폰트](https://fonts.google.com/)에서 사용할 폰트(Nanum Brush Script)를 선택하고, 현재 R 세션에서 이 폰트에 대한 이름을 붙인 예이다. 두 번째 인자에 준 이름으로 이후 R 코드에서 이 폰트를 지목하여 사용하게 된다. `showtext_auto()` 함수는 현재 R 세션에 이 폰트를 사용하도록 지시한다. 
+
+```{r}
+font_add_google("Nanum Brush Script", "my-nbs")
+showtext_auto()
+```
+
+이제 이 폰트를 사용하여 그래프를 만든다. `theme()` 함수에서 `text` 요소에서 `family` 인자에서 앞에서 지정한 폰트 이름을 지정함으로써 이 그래프의 텍스트에 사용할 폰트가 정해진다. 
+
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+    geom_point() +
+    labs(
+        title = "차체 무게와 연비의 관계",
+        x = "차체 무게",
+        y = "연비"
+    ) +
+    theme(text = element_text(family = "my-nbs"))
+```
+
+만약 구글 폰트의 하나인 "Imperial Script"를 사용하고 싶다면 다음과 같이 할 수 있을 것이다. 
+
+```{r}
+font_add_google("Imperial Script", "my-imperial")
+showtext_auto()
+```
+
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+    geom_point() +
+    labs(
+        title = "Weight vs MPG",
+        x = "Weight",
+        y = "MPG"
+    ) +
+    theme(text = element_text(family = "my-imperial"))
+```
+
+### `theme()` 함수 안에서 텍스트 요소와 그 값을 지정 
+
+앞에서 `theme()` 함수 안에서 `text` 요소에 대한 폰트 패밀리를 지정하였다. 이 외에도 `theme()` 함수 안에서 다양한 텍스트 요소에 대한 폰트 패밀리를 지정할 수 있다. 
+
+폰트 뿐만 아니라 그래프의 테마와 관련된 것들은 모두 `theme()` 함수 안에서 지정할 수 있다. 대체로 다음과 같은 문법을 따른다.
+
+```.R 
+theme(요소이름 = element_*(속성 = 값))
+```
+
+- 요소 이름은 그래프 요소의 이름이다. 예를 들어, `text` 요소는 텍스트 요소이다. 이들 요소 이름들은 위계 구조를 가지고 있어 예를 들어 `text`는 전체 텍스트를 의미하고, `axis.text`는 `axis`의 텍스트를 의미한다.
+
+- 해당 요소의 값은 `element_*()` 함수를 사용한다. 예를 들어, `text` 요소의 값은 `element_text()` 함수를 사용한다. 이 안에 해당 요소의 속성을 지정한다. 어떤 속성들을 지정할 수 있는지는 `?element_text`와 같이 도움말에 상세히 나와 있다. 
+
+위에서 만들어 보았던 그래프를 예시로 폰트, 크기, 페이스, 색상을 `element_text()` 함수한 예이다. 
+
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+    geom_point() +
+    labs(
+        title = "Weight vs MPG",
+        x = "Weight",
+        y = "MPG"
+    ) +
+    theme(
+        text = element_text(
+            family = "my-imperial",
+            size = 20,
+            face = "bold",
+            color = "salmon"
+        )
+    )
+```
+
+### 그래프에 텍스트 삽입
+
+#### `geom_text()`와 `geom_label()` 함수
+
+`ggplot2` 패키지의 `geom_text()`와 `geom_label()` 함수는 그래프에 텍스트를 삽입하는 데 사용된다. 이 함수는 `label` 매핑을 사용할 수 있고, 여기에 값(변수)를 매핑한다. 
+
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+    geom_text(
+        aes(label = rownames(mtcars))
+    )
+```
+
+텍스트들이 곁쳐 있는 경우 텍스트들이 겹치는 것을 방지하기 위해 [`ggrepel`](https://ggrepel.slowkow.com/) 패키지의 `geom_text_repel()` 함수를 사용할 수 있다. 
+
+```{r}
+library(ggrepel)
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+    geom_text_repel(
+        aes(label = rownames(mtcars))
+    )
+```
+
+#### `annotate()` 주석 추가 함수
+
+`annotate()` 함수는 텍스트를 포함한 여러 형태의 주석을 간단하게 추가할 수 있는 기능을 제공한다. 앞의 `geom_text()`와 `geom_label()` 함수는 데이터 프로세스를 거치기 때문에 다소 번잡해 보일 수 있다. 그렇지만 `annotate()` 함수는 이런 번잡함이 없어서 편리하다.
+
+첫 번째 인자는 `"text`"인 것은 이것이 텍스트 형태의 주석이라는 것을 말한다. 다른 형태의 주석은 `?annotate` 도움말을 참고한다. 위치는 축의 값으로 결정된다. 
+
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+    geom_point() +
+    annotate("text",
+        x = 3, y = 30,
+        label = "Hello, world!"
+    )
+```
+
+#### `ggtext` 패키지
+
+`ggtext` 패키지는 그래프를 텍스트를 넣을 수도 있고, 텍스트를 Markdown/HTML 형식으로 작성하여 그래프에 삽입할 수 있게 해 준다. 다음과 같은 핵심 함수를 가지고 있다.
+
+- `element_markdown()` 함수는 `theme()` 함수에서 텍스트 요소를 Markdown/HTML 형식으로 작성할 수 있게 해 준다.
+- `geom_richtext()` 함수는 텍스트를 Markdown/HTML 형식으로 작성하여 그래프에 삽입할 수 있게 해 준다. 
+- `geom_textbox()` 함수는 텍스트를 가진 박스를 그래프에 삽입할 수 있다.
+
+다음은 `element_markdown()` 함수를 `theme()` 함수에서 사용하기 때문에 `plot.title`에 마크다운 문법으로 제목을 지정해 줄 수 있다. 
+
+```{r}
+library(ggtext)
+
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+    geom_point() +
+    labs(
+        title = "MPG vs **Weight**",
+        x = "Weight",
+        y = "MPG"
+    ) +
+    theme(
+        plot.title = element_markdown()
+    )
+```
+
+`geom_richtext()` 함수는 데이터로 들어가 있는 텍스트(Markdown/HTML 형식으로 작성 가능)를 그래프에 삽입할 수 있게 해 준다. `geom_richtext()` 지옴에서 핵심적으로 사용되는 매핑이 `label`이다. 다음은 일부러 `mtcars` 데이터셋의 행 번호를 가지고 텍스트 데이터를 만들고 이것을 `label`이라는 새로운 열로 만들고, 이것을 `geom_richtext()` 지옴에서 사용하는 예이다.
+
+```{r}
+#| message: false
+library(dplyr)
+library(stringr)
+df <- mtcars |>
+    mutate(
+        label = str_glue("{row_number()}번")
+    )
+
+ggplot(df, aes(x = mpg, y = disp)) +
+    geom_richtext(aes(label = label)) +
+    labs(
+        title = "mtcars 데이터셋",
+        subtitle = "차량의 연비와 배기량",
+        x = "연비(mpg)",
+        y = "배기량(disp)"
+    )
+```
+
+`geom_textbox()` 함수는 줄바꿈이 되는 텍스트 상자를 그래프에 삽입할 수 있게 해 준다. 
+
+다음은 단순한 `annotate()` 함수를 사용한 예이다. 
+
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+    geom_point() +
+    annotate("text",
+        x = 3, y = 30,
+        label = "lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+    )
+```
+
+다음은 `geom_textbox()` 함수를 사용한 예이다. 경고문이 뜨기는 하지만 무시해도 된다. 물론 앞의 `geom_richtext()` 함수와 비슷하게 Markdown/HTML 형식으로 작성할 수 있다. 
+
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+    geom_point() +
+    geom_textbox(
+        aes(label = "lorem ipsum dolor **sit amet**, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."),
+        x = 3, y = 30,
+        width = unit(3, "inch"),
+        family = "my-imperial",
+        color = "salmon"
+    )
+```
+
+### `theme()` 함수의 텍스트 관련 인자들(with AI)
+
+앞에서도 소개했지만 여기서 `theme()` 함수에서 텍스트 요소를 커스터마이징하는 주요 인자들을 정리해 보면 [@tbl-theme-text] 표와 같다. 
+
+| 요소 | 설명 | 주요 속성 | 예시 |
+|------|------|-----------|------|
+| `text` | 모든 텍스트의 기본 스타일 | `family`, `size`, `face`, `color`, `angle`, `hjust`, `vjust` | `element_text(family = "Arial", size = 12)` |
+| `plot.title` | 그래프 제목 | `size`, `face`, `color`, `hjust`, `margin` | `element_text(size = 16, face = "bold", hjust = 0.5)` |
+| `plot.subtitle` | 그래프 부제목 | `size`, `face`, `color`, `hjust`, `margin` | `element_text(size = 14, color = "gray50")` |
+| `plot.caption` | 그래프 캡션 | `size`, `face`, `color`, `hjust` | `element_text(size = 10, hjust = 1)` |
+| `axis.title` | 축 제목 | `size`, `face`, `color`, `angle` | `element_text(size = 12, angle = 0)` |
+| `axis.title.x` | x축 제목 | `size`, `face`, `color`, `angle`, `margin` | `element_text(size = 12, margin = margin(t = 10))` |
+| `axis.title.y` | y축 제목 | `size`, `face`, `color`, `angle`, `margin` | `element_text(size = 12, angle = 90)` |
+| `axis.text` | 축 텍스트 | `size`, `face`, `color`, `angle` | `element_text(size = 10, color = "black")` |
+| `axis.text.x` | x축 텍스트 | `size`, `face`, `color`, `angle`, `hjust`, `vjust` | `element_text(angle = 45, hjust = 1)` |
+| `axis.text.y` | y축 텍스트 | `size`, `face`, `color`, `angle`, `hjust`, `vjust` | `element_text(hjust = 1)` |
+| `legend.title` | 범례 제목 | `size`, `face`, `color`, `hjust` | `element_text(size = 12, face = "bold")` |
+| `legend.text` | 범례 텍스트 | `size`, `face`, `color`, `hjust` | `element_text(size = 10)` |
+| `strip.text` | facet 텍스트 | `size`, `face`, `color`, `margin` | `element_text(size = 12, face = "bold")` |
+| `strip.text.x` | 가로 facet 텍스트 | `size`, `face`, `color`, `margin` | `element_text(size = 12)` |
+| `strip.text.y` | 세로 facet 텍스트 | `size`, `face`, `color`, `margin`, `angle` | `element_text(size = 12, angle = 0)` |
+
+: 텍스트를 제어하기 위한 `theme()` 함수의 인자들 {#tbl-theme-text}
+
+각 텍스트 요소는 `element_text()` 함수를 사용하여 스타일을 지정할 수 있으며, 다음과 같은 주요 속성들을 사용할 수 있다:
+
+- `family`: 폰트 패밀리 (예: "Arial", "Times New Roman")
+- `size`: 텍스트 크기 (숫자 또는 `rel()` 함수 사용)
+- `face`: 폰트 스타일 ("plain", "bold", "italic", "bold.italic")
+- `color`: 텍스트 색상
+- `angle`: 텍스트 회전 각도 (0-360)
+- `hjust`: 수평 정렬 (0-1, 0=왼쪽, 1=오른쪽)
+- `vjust`: 수직 정렬 (0-1, 0=아래, 1=위)
+- `margin`: 여백 (margin() 함수 사용)
+
+구체적인 사용법은 아래 코드를 참고한다.
+```{r}
+# 예시: 텍스트 테마 적용하기
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+    geom_point() +
+    labs(
+        title = "차량 무게와 연비의 관계",
+        subtitle = "mtcars 데이터셋",
+        caption = "데이터 출처: R 기본 데이터셋",
+        x = "무게 (1000 lbs)",
+        y = "연비 (mpg)"
+    ) +
+    theme(
+        # 제목 관련
+        plot.title = element_text(
+            size = 16,
+            face = "bold",
+            color = "#004476",
+            hjust = 0.5,
+            margin = margin(b = 10)
+        ),
+        plot.subtitle = element_text(
+            size = 12,
+            color = "gray50",
+            hjust = 0.5,
+            margin = margin(b = 20)
+        ),
+        plot.caption = element_text(
+            size = 10,
+            color = "gray50",
+            hjust = 1,
+            margin = margin(t = 10)
+        ),
+        # 축 제목
+        axis.title = element_text(
+            size = 12,
+            face = "bold"
+        ),
+        axis.title.y = element_text(
+            angle = 90,
+            margin = margin(r = 10)
+        ),
+        # 축 텍스트
+        axis.text = element_text(
+            size = 10,
+            color = "black"
+        ),
+        axis.text.x = element_text(
+            angle = 45,
+            hjust = 1
+        )
+    )
+```
+
+## 그래프(plot) 수준 커스터마이징(with AI)
+
+그래프 전체적인 모양을 제어하는 `theme()` 함수의 인자들은 [@tbl-theme-plot] 표와 같다. 앞에서 우리는 텍스트와 관계된 내용들은 이미 한번 설명했어서, 일부는 중복된다. 
+
+한가지 주의할 점은 `plot.background` 요소는 그래프 전체의 배경(전체 캔버스)을 조정하는 것이고, `panel.background` 요소는 그래프 패널의 배경을 조정하는 요소인데 이것에 대해서는 뒤에서 다시 설명한다. 
+
+| 요소 | 설명 | 주요 속성 | 예시 |
+|------|------|-----------|------|
+| `plot.background` | 그래프 전체 배경 | `fill`, `colour`, `size`, `linetype` | `element_rect(fill = "white", colour = "black")` |
+| `plot.margin` | 그래프 여백 | `margin()` 함수 사용 | `margin(t = 10, r = 10, b = 10, l = 10)` |
+| `plot.title` | 그래프 제목 | `size`, `face`, `colour`, `hjust`, `margin` | `element_text(size = 16, face = "bold")` |
+| `plot.subtitle` | 그래프 부제목 | `size`, `face`, `colour`, `hjust`, `margin` | `element_text(size = 14, colour = "gray50")` |
+| `plot.caption` | 그래프 캡션 | `size`, `face`, `colour`, `hjust` | `element_text(size = 10, hjust = 1)` |
+| `plot.tag` | 그래프 태그 | `size`, `face`, `colour`, `hjust` | `element_text(size = 12, face = "bold")` |
+| `plot.tag.position` | 태그 위치 | "topleft", "top", "topright", "left", "right", "bottomleft", "bottom", "bottomright" | `"topleft"` |
+
+: 그래프 수준의 요소를 제어하기 위한 `theme()` 함수의 인자들 {#tbl-theme-plot}
+
+여기서 `element_rect()` 함수는 그래프의 사각형 모양의 것들을 조절하는 데 사용된다. 주요 속성들은 다음과 같다:
+
+- `element_rect()` 함수의 속성:
+  - `fill`: 배경색
+  - `colour`: 테두리 색상
+  - `size`: 테두리 두께
+  - `linetype`: 테두리 선 스타일 ("solid", "dashed", "dotted" 등)
+
+- `margin()` 함수는 도움말을 참고한다.
+
+구체적인 사용법은 아래 코드를 참고한다.
+
+```{r}
+# 예시: 그래프 수준 테마 적용하기
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+    geom_point() +
+    labs(
+        title = "차량 무게와 연비의 관계",
+        subtitle = "mtcars 데이터셋",
+        caption = "데이터 출처: R 기본 데이터셋",
+        tag = "그림 1"
+    ) +
+    theme(
+        # 그래프 배경
+        plot.background = element_rect(
+            fill = "white",
+            colour = "black",
+            linewidth = 1
+        ),
+        # 플롯팅 영역
+        panel.background = element_rect(
+            fill = "white",
+            colour = "black",
+            linewidth = 1
+        ),
+        # 그래프 여백
+        plot.margin = margin(
+            t = 20, # 위쪽
+            r = 20, # 오른쪽
+            b = 20, # 아래쪽
+            l = 20 # 왼쪽
+        ),
+        # 제목
+        plot.title = element_text(
+            size = 16,
+            face = "bold",
+            hjust = 0.5,
+            margin = margin(b = 10)
+        ),
+        # 부제목
+        plot.subtitle = element_text(
+            size = 12,
+            colour = "gray50",
+            hjust = 0.5,
+            margin = margin(b = 20)
+        ),
+        # 캡션
+        plot.caption = element_text(
+            size = 10,
+            colour = "gray50",
+            hjust = 1,
+            margin = margin(t = 10)
+        ),
+        # 태그
+        plot.tag = element_text(
+            size = 12,
+            face = "bold",
+            colour = "#004476"
+        ),
+        plot.tag.position = "topleft"
+    )
+```
+
+## 레전드 다루기(with AI)
+
+범례(legend)를 제어하는 `theme()` 함수의 인자들은 [@tbl-theme-legend] 표와 같다.
+
+| 요소 | 설명 | 주요 속성 | 예시 |
+|------|------|-----------|------|
+| `legend.position` | 범례 위치 | "none", "left", "right", "bottom", "top", 또는 좌표값 | `"bottom"` 또는 `c(0.95, 0.95)` |
+| `legend.justification` | 범례 정렬 기준점 | "left", "right", "center", "top", "bottom" 또는 좌표값 | `c("right", "top")` |
+| `legend.direction` | 범례 항목 배치 방향 | "horizontal", "vertical" | `"horizontal"` |
+| `legend.box` | 여러 범례의 배치 | "horizontal", "vertical" | `"horizontal"` |
+| `legend.box.just` | 여러 범례의 정렬 | "left", "right", "center", "top", "bottom" | `"left"` |
+| `legend.box.margin` | 여러 범례 사이 여백 | `margin()` 함수 사용 | `margin(6, 6, 6, 6)` |
+| `legend.box.background` | 여러 범례 배경 | `element_rect()` 함수 사용 | `element_rect(fill = "white")` |
+| `legend.margin` | 범례 여백 | `margin()` 함수 사용 | `margin(6, 6, 6, 6)` |
+| `legend.background` | 범례 배경 | `element_rect()` 함수 사용 | `element_rect(fill = "white")` |
+| `legend.key` | 범례 키 배경 | `element_rect()` 함수 사용 | `element_rect(fill = "white")` |
+| `legend.key.size` | 범례 키 크기 | `unit()` 함수 사용 | `unit(1.5, "lines")` |
+| `legend.key.height` | 범례 키 높이 | `unit()` 함수 사용 | `unit(1.5, "lines")` |
+| `legend.key.width` | 범례 키 너비 | `unit()` 함수 사용 | `unit(1.5, "lines")` |
+| `legend.text` | 범례 텍스트 | `element_text()` 함수 사용 | `element_text(size = 10)` |
+| `legend.title` | 범례 제목 | `element_text()` 함수 사용 | `element_text(face = "bold")` |
+| `legend.title.align` | 범례 제목 정렬 | 0-1 사이 값 | `0.5` |
+| `legend.text.align` | 범례 텍스트 정렬 | 0-1 사이 값 | `0` |
+| `legend.spacing` | 범례 항목 간격 | `unit()` 함수 사용 | `unit(0.5, "lines")` |
+| `legend.spacing.x` | 범례 항목 가로 간격 | `unit()` 함수 사용 | `unit(0.5, "lines")` |
+| `legend.spacing.y` | 범례 항목 세로 간격 | `unit()` 함수 사용 | `unit(0.5, "lines")` |
+
+: 범례를 제어하기 위한 `theme()` 함수의 인자들 {#tbl-theme-legend}
+
+구체적인 사용법은 아래 코드를 참고한다.
+
+```{r}
+# 예시: 범례 테마 적용하기
+ggplot(mtcars, aes(x = wt, y = mpg, color = factor(cyl), shape = factor(vs))) +
+    geom_point() +
+    labs(
+        title = "차량 무게와 연비의 관계",
+        color = "실린더 수",
+        shape = "엔진 형태"
+    ) +
+    theme(
+        # 범례 위치
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+
+        # 범례 배경
+        legend.background = element_rect(
+            fill = "white",
+            colour = "black",
+            linewidth = 0.5
+        ),
+
+        # 범례 키
+        legend.key = element_rect(
+            fill = "white",
+            colour = "black",
+            linewidth = 0.5
+        ),
+        legend.key.size = unit(1.5, "lines"),
+
+        # 범례 텍스트
+        legend.text = element_text(
+            size = 10,
+            colour = "black"
+        ),
+
+        # 범례 제목
+        legend.title = element_text(
+            size = 12,
+            face = "bold",
+            colour = "#004476"
+        ),
+
+        # 범례 여백
+        legend.margin = margin(
+            t = 10,
+            r = 10,
+            b = 10,
+            l = 10
+        ),
+
+        # 범례 항목 간격
+        legend.spacing = unit(0.5, "lines")
+    )
+```
+
+## 축(axis) 다루기(with AI)
+
+축(axis)을 제어하는 `theme()` 함수의 인자들은 [@tbl-theme-axis] 표와 같다.
+
+| 요소 | 설명 | 주요 속성 | 예시 |
+|------|------|-----------|------|
+| `axis.line` | 축 선 | `colour`, `size`, `linetype` | `element_line(colour = "black", size = 1)` |
+| `axis.line.x` | x축 선 | `colour`, `size`, `linetype` | `element_line(colour = "black", size = 1)` |
+| `axis.line.y` | y축 선 | `colour`, `size`, `linetype` | `element_line(colour = "black", size = 1)` |
+| `axis.text` | 축 텍스트 | `size`, `face`, `colour`, `angle`, `hjust`, `vjust` | `element_text(size = 10, colour = "black")` |
+| `axis.text.x` | x축 텍스트 | `size`, `face`, `colour`, `angle`, `hjust`, `vjust` | `element_text(angle = 45, hjust = 1)` |
+| `axis.text.y` | y축 텍스트 | `size`, `face`, `colour`, `angle`, `hjust`, `vjust` | `element_text(hjust = 1)` |
+| `axis.title` | 축 제목 | `size`, `face`, `colour`, `angle`, `hjust`, `vjust` | `element_text(size = 12, face = "bold")` |
+| `axis.title.x` | x축 제목 | `size`, `face`, `colour`, `angle`, `hjust`, `vjust` | `element_text(size = 12, hjust = 0.5)` |
+| `axis.title.y` | y축 제목 | `size`, `face`, `colour`, `angle`, `hjust`, `vjust` | `element_text(size = 12, angle = 90)` |
+| `axis.ticks` | 축 눈금 | `colour`, `size`, `linetype` | `element_line(colour = "black", size = 0.5)` |
+| `axis.ticks.x` | x축 눈금 | `colour`, `size`, `linetype` | `element_line(colour = "black", size = 0.5)` |
+| `axis.ticks.y` | y축 눈금 | `colour`, `size`, `linetype` | `element_line(colour = "black", size = 0.5)` |
+| `axis.ticks.length` | 축 눈금 길이 | `unit()` 함수 사용 | `unit(0.25, "cm")` |
+| `axis.ticks.length.x` | x축 눈금 길이 | `unit()` 함수 사용 | `unit(0.25, "cm")` |
+| `axis.ticks.length.y` | y축 눈금 길이 | `unit()` 함수 사용 | `unit(0.25, "cm")` |
+
+: 축을 제어하기 위한 `theme()` 함수의 인자들 {#tbl-theme-axis}
+
+앞에서 설명하지 않았던 `element_line()` 함수는 축 선의 모양을 조정하는 데 사용된다. 주요 속성들은 다음과 같다:
+
+- `element_line()` 함수의 속성:
+  - `colour`: 선 색상
+  - `size`: 선 두께
+  - `linetype`: 선 스타일 ("solid", "dashed", "dotted" 등)
+
+구체적인 사용법은 아래 코드를 참고한다.
+
+```{r}
+# 예시: 축 테마 적용하기
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+    geom_point() +
+    labs(
+        title = "차량 무게와 연비의 관계",
+        x = "무게 (1000 lbs)",
+        y = "연비 (mpg)"
+    ) +
+    theme(
+        # 축 선
+        axis.line = element_line(
+            colour = "black",
+            size = 1
+        ),
+
+        # 축 텍스트
+        axis.text = element_text(
+            size = 10,
+            colour = "black"
+        ),
+        axis.text.x = element_text(
+            angle = 45,
+            hjust = 1,
+            margin = margin(t = 5)
+        ),
+        axis.text.y = element_text(
+            hjust = 1,
+            margin = margin(r = 5)
+        ),
+
+        # 축 제목
+        axis.title = element_text(
+            size = 12,
+            face = "bold"
+        ),
+        axis.title.x = element_text(
+            margin = margin(t = 10)
+        ),
+        axis.title.y = element_text(
+            angle = 90,
+            margin = margin(r = 10)
+        ),
+
+        # 축 눈금
+        axis.ticks = element_line(
+            colour = "black",
+            size = 0.5
+        ),
+
+        # 축 눈금 길이
+        axis.ticks.length = unit(0.25, "cm")
+    )
+```
+
+## 패널(panel): 플롯팅 영역 제어(with AI)
+
+앞에서도 설명했지만 패널이란 그래프 플롯팅 영역을 말한다. 앞에서 본 `plot`과 헷갈리지 말아야 한다. 
+
+패널(panel)을 제어하는 `theme()` 함수의 인자들은 [@tbl-theme-panel] 표와 같다.
+
+| 요소 | 설명 | 주요 속성 | 예시 |
+|------|------|-----------|------|
+| `panel.background` | 패널 배경 | `fill`, `colour`, `size`, `linetype` | `element_rect(fill = "white", colour = "black")` |
+| `panel.border` | 패널 테두리 | `fill`, `colour`, `size`, `linetype` | `element_rect(fill = NA, colour = "black")` |
+| `panel.grid` | 패널 격자 | `colour`, `size`, `linetype` | `element_line(colour = "gray90")` |
+| `panel.grid.major` | 주요 격자 | `colour`, `size`, `linetype` | `element_line(colour = "gray90", size = 0.5)` |
+| `panel.grid.minor` | 보조 격자 | `colour`, `size`, `linetype` | `element_line(colour = "gray95", size = 0.25)` |
+| `panel.grid.major.x` | x축 주요 격자 | `colour`, `size`, `linetype` | `element_line(colour = "gray90")` |
+| `panel.grid.major.y` | y축 주요 격자 | `colour`, `size`, `linetype` | `element_line(colour = "gray90")` |
+| `panel.grid.minor.x` | x축 보조 격자 | `colour`, `size`, `linetype` | `element_line(colour = "gray95")` |
+| `panel.grid.minor.y` | y축 보조 격자 | `colour`, `size`, `linetype` | `element_line(colour = "gray95")` |
+| `panel.spacing` | 패널 간격 | `unit()` 함수 사용 | `unit(1, "lines")` |
+| `panel.spacing.x` | 가로 패널 간격 | `unit()` 함수 사용 | `unit(1, "lines")` |
+| `panel.spacing.y` | 세로 패널 간격 | `unit()` 함수 사용 | `unit(1, "lines")` |
+| `panel.ontop` | 격자를 데이터 위에 표시 | `TRUE`/`FALSE` | `TRUE` |
+
+: 패널을 제어하기 위한 `theme()` 함수의 인자들 {#tbl-theme-panel}
+
+구체적인 사용법은 아래 코드를 참고한다.
+
+```{r}
+# 예시: 패널 테마 적용하기
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+    geom_point() +
+    labs(
+        title = "차량 무게와 연비의 관계",
+        x = "무게 (1000 lbs)",
+        y = "연비 (mpg)"
+    ) +
+    theme(
+        # 패널 배경
+        panel.background = element_rect(
+            fill = "white",
+            colour = "black",
+            size = 1
+        ),
+
+        # 패널 테두리
+        panel.border = element_rect(
+            fill = NA,
+            colour = "black",
+            size = 1
+        ),
+
+        # 주요 격자
+        panel.grid.major = element_line(
+            colour = "gray90",
+            size = 0.5
+        ),
+
+        # 보조 격자
+        panel.grid.minor = element_line(
+            colour = "gray95",
+            size = 0.25
+        ),
+
+        # x축 주요 격자
+        panel.grid.major.x = element_line(
+            colour = "gray90",
+            size = 0.5
+        ),
+
+        # y축 주요 격자
+        panel.grid.major.y = element_line(
+            colour = "gray90",
+            size = 0.5
+        ),
+
+        # 격자를 데이터 위에 표시
+        panel.ontop = FALSE
+    )
+```
+
+## 패시팅(facet) 제어(with AI)
+
+패시팅(facet)을 제어하는 `theme()` 함수의 인자들은 [@tbl-theme-facet] 표와 같다.
+
+| 요소 | 설명 | 주요 속성 | 예시 |
+|------|------|-----------|------|
+| `strip.background` | 패시트 배경 | `fill`, `colour`, `size`, `linetype` | `element_rect(fill = "gray90", colour = "black")` |
+| `strip.background.x` | 가로 패시트 배경 | `fill`, `colour`, `size`, `linetype` | `element_rect(fill = "gray90")` |
+| `strip.background.y` | 세로 패시트 배경 | `fill`, `colour`, `size`, `linetype` | `element_rect(fill = "gray90")` |
+| `strip.text` | 패시트 텍스트 | `size`, `face`, `colour`, `angle`, `hjust`, `vjust` | `element_text(size = 12, face = "bold")` |
+| `strip.text.x` | 가로 패시트 텍스트 | `size`, `face`, `colour`, `angle`, `hjust`, `vjust` | `element_text(size = 12)` |
+| `strip.text.y` | 세로 패시트 텍스트 | `size`, `face`, `colour`, `angle`, `hjust`, `vjust` | `element_text(size = 12, angle = 0)` |
+| `strip.placement` | 패시트 위치 | "inside", "outside" | `"outside"` |
+| `strip.switch.pad.grid` | 그리드 패시트 간격 | `unit()` 함수 사용 | `unit(0.5, "lines")` |
+| `strip.switch.pad.wrap` | 래핑 패시트 간격 | `unit()` 함수 사용 | `unit(0.5, "lines")` |
+
+: 패시팅을 제어하기 위한 `theme()` 함수의 인자들 {#tbl-theme-facet}
+
+구체적인 사용법은 아래 코드를 참고한다.
+
+```{r}
+# 예시: 패시팅 테마 적용하기
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+    geom_point() +
+    facet_wrap(~cyl) +
+    labs(
+        title = "차량 무게와 연비의 관계",
+        x = "무게 (1000 lbs)",
+        y = "연비 (mpg)"
+    ) +
+    theme(
+        # 패시트 배경
+        strip.background = element_rect(
+            fill = "gray90",
+            colour = "black",
+            size = 1
+        ),
+
+        # 패시트 텍스트
+        strip.text = element_text(
+            size = 12,
+            face = "bold",
+            colour = "black"
+        ),
+
+        # 패시트 위치
+        strip.placement = "outside",
+
+        # 패시트 간격
+        strip.switch.pad.wrap = unit(0.5, "lines")
+    )
+```

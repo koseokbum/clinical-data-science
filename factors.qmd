@@ -1,4 +1,4 @@
-# R 팩터([factor]{.style-text font-weight="bold" color="#1B9E77"})
+# R 팩터([factor]{.style-text font-weight="bold" color="#1B9E77"}) {#sec-factors}
 
 R 언어는 원래 통계 분석을 염두에 두고 개발된 언어답게, 통계학에서 다루는 카테고리형(categorical) 변수 및 순서형(ordinal) 변수를 위한 특수한 형태의 벡터를 지원한다.
 

@@ -1,0 +1,224 @@
+# 스케일([scales]{.style-text font-weight="bold" color="#7570B3"})과 [Color Scale]{.style-text font-weight="bold" color="#7570B3"}
+
+여기선 `ggplot2` 패키지에서의 스케일(scales)의 개념을 소개하고, 그 가운데 실제로 그래프를 만들 때 중요한 색상 스케일에 대해서 설명하고자 한다.
+
+## 스케일과 스케일의 역할 
+
+`ggplot2` 패키지에서 스케일은 데이터를 매핑하는 함수이다. `ggplot2` 패키지의 용어로 말하면 데이터를 aesthetic 속성에 매팽하는 데 사용되는 함수이다. 따라서 각각의 매핑에는 거기에 해당되는 스케일이 사용된다. 언뜻 보기에 스케일을 사용하지 않는 것처럼 보이는 경우에도 디폴트 스케일이 사용된다. 다음 예시를 보자. 
+
+```{r}
+#| message: false
+library(ggplot2)
+library(dplyr)
+glimpse(mpg)
+ggplot(mpg, aes(x = displ, y = hwy, color = class)) +
+    geom_point()
+```
+
+위 그래프에는 `x`, `y`, `color` aesthetic이 사용되고 있고, 각각의 매핑에는 디폴트 스케일이 사용된다. 이것을 디폴트를 풀어서 보면 다음과 같다. 
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = class)) +
+    geom_point() +
+    scale_x_continuous() +
+    scale_y_continuous() +
+    scale_color_discrete()
+```
+
+- `x` aesthetic에 대한 매핑: `scale_x_continuous()`
+- `y` aesthetic에 대한 매핑: `scale_y_continuous()`
+- `color` aesthetic에 대한 매핑: `scale_color_discrete()`
+
+스케일 함수들의 이름은 위와 같이 `scale_<aesthetic>_<type>()` 형식으로 되어 있다. 여기서 `<aesthetic>`은 스케일이 적용되는 aesthetic 속성의 이름이고, `<type>`은 스케일의 타입이다. 이 `type`은 데이터의 타입에 따라 다르다. 예를 들어, `x`와 `y`는 수치형 데이터이고, `color`는 범주형 데이터이다. 따라서 `x`와 `y`에 대한 스케일은 `continuous`이고, `color`에 대한 스케일은 `discrete`이다. 즉, 변수의 타입에 따라 스케일의 타입이 결정된다. 
+
+이 스케일 함수들의 도움말을 찾아 보면 [@tbl-scale-args]와 같은 인자들이 사용된다는 것을 알 수 있다. 
+
+- `name` 인자: 축의 레이블을 지정할 수 있고, 레젠드의 제목을 지정할 수 있다. 
+- `breaks` 인자: 축의 눈금을 지정할 수 있고, 레젠드의 키를 지정할 수 있다. 
+- `labels` 인자: 축의 눈금 레이블을 지정할 수 있고, 레젠드의 키 레이블을 지정할 수 있다. 
+
+```{r}
+#| label: tbl-scale-args
+#| tbl-cap: 스케일 함수의 인자 이름과 의미
+#| echo: false
+library(tibble)
+df <- tibble::tribble(
+    ~`스케일 함수 인자`, ~축, ~레전드,
+    "`name`", "Label", "Title",
+    "`breaks`", "Ticks & grid line", "Key",
+    "`labels`", "Tick label", "Key label"
+)
+kableExtra::kable(df)
+```
+
+![스케일:  축과 레전드](https://ggplot2-book.org/diagrams/scale-guides.png){#fig-scale-guides}
+
+이 내용을 위 그래프에 적용해 보자. 
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = class)) +
+    geom_point() +
+    scale_x_continuous(name = "Engine displacement (liters)") +
+    scale_y_continuous(name = "Highway miles per gallon") +
+    scale_color_discrete(name = "Type of car")
+```
+
+축의 틱(ticks)을 변경할 수도 있고, `NULL`을 `name` 인자에 주면 레이블이 사라진다.
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = class)) +
+    geom_point() +
+    scale_x_continuous(name = NULL, breaks = seq(2, 8, by = 2)) +
+    scale_y_continuous(name = NULL, breaks = seq(10, 50, by = 10))
+```
+
+이제 디폴트 스케일이 아닌 다른 스케일 함수를 지정해 보자. `color` aesthetic에 `scale_color_brewer()` 함수로 새로운 색상 팔레트를 지정해 보았다.
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = class)) +
+    geom_point() +
+    scale_x_continuous() +
+    scale_y_continuous() +
+    scale_color_brewer(palette = "Set1")
+```
+
+이와 같이 스케일은 데이터를 매핑하고, 그 결과로 축과 레젠드를 만들어 낸다. 따라서 축과 레전드에 관련된 것들은 스케일 함수를 통해서 조절할 수 있다. 그렇지만, 레이블 관련된 작업은 아주 흔하기 때문에 레이블을 바꾸기 위해서 스케일 함수를 사용하는 것은 비효율적이다. 그래서 이런 작업을 쉽게 하기 위해서 `labs()` 함수를 제공한다. 다음은 `labs()` 함수를 사용한 예시이다.
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = class)) +
+    geom_point() +
+    labs(
+        title = "Fuel economy data from 1999 and 2008 for 38 popular car models",
+        x = "Engine displacement (liters)",
+        y = "Highway miles per gallon",
+        color = "Type of car"
+    )
+```
+
+## 색상 스케일(color scale)
+
+그래프에서 색상은 매우 중요한 역할을 한다. 그런데 색상을 잘 선택하는 것은 쉬운 일이 아니다. 여기서는 나처럼 색에 대한 감이 떨어지는 사람들을 위해 그래프에서 색상을 잘 선택하는 방법을 정리하고자 한다. 
+
+클라우스 윌케(Claus Wilke)의 [책](https://clauswilke.com/dataviz/color-basics.html)에 따르면 그래프에서 색은 다음 3가지 가운데 하나의 역할을 하는 데 사용된다. 
+
+1. 데이터 그룹간의 차이를 드러내고자 할 때(Qualitative, Diversing)
+2. 데이터의 값들을 표현하고자 할 때(Sequential) 
+3. 어떤 내용을 강조하고자 할 때(Accent)
+
+`ggplot2` 패키지로 이런 개념을 살리고자 할 때 우리가 어떤 색상 팔레트를 사용할 것인가라는 문제로 귀결된다.
+
+### 색상 팔레트(Color Palette)
+
+색상 팔레트(color palette)란 화가의 팔레트처럼 조화로운 색들을 모은 것을 말한다. 그리고 이런 팔레트는 색의 역할에 따라 역시 3가지로 나눌 수 있다.
+
+1. Qualitative
+2. Diverging
+3. Sequential
+
+그래서 팔레트를 선택하는 방법은 다음과 같이 정리할 수 있다.
+
+1. 어떤 목적인가?
+2. 몇 개의 색을 사용할 것인가?
+3. 그리고 어떤 색을 중심으로 사용할 것인가? 
+4. 어디에 쓸 것인가? 즉. 지도를 표시하는 데 사용할지, 선 그래프에 사용할지, 히트맵 등에 사용할지 등을 결정한다. 
+5. 좀 더 나아가면, 색각 이상 사람들도 잘 볼 수 있게 하려면 어떤 색을 선택해야 하는지 등을 고려한다. 
+
+지도를 표현할 때 많이 사용되는 [COLORBREWER 2.0](https://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3) 사이트를 방문하여 연습해 보면 좋겠다. 실제로 뒤에서 설명할 `ggplot2` 패키지 내에서 색상 팔레트 생성 방법에 여기에 기초해서 만들어 졌다.
+
+[colorspace 패키지](https://colorspace.r-forge.r-project.org/index.html)는 색상 팔레트의 생성과 선택을 돕는 패키지로, 색 관련한 가장 포괄적인 기능들을 제공한다. 그래도 그 이전에 추가 패키지를 사용하지 않고 `ggplot2` 패키지 내에서 색상 팔레트를 생성하는 방법을 소개하고자 한다. 
+
+### `ggplot2` 패키지 내에서 색상 팔레트 생성
+
+`ggplot2` 패키지에서 팔레트 사용하는 방법은 [ColorBrewer 기반 스케일](https://ggplot2.tidyverse.org/reference/scale_brewer.html)를 참고한다
+
+- `scale_color_brewer()` 함수: `color` aesthetic에 사용되는 색상 팔레트
+- `scale_fill_brewer()` 함수: `fill` aesthetic에 사용되는 색상 팔레트
+
+```{r}
+ggplot(penguins) +
+    geom_point(aes(x = bill_len, y = bill_dep, color = species)) +
+    scale_color_brewer(palette = "Set1")
+```
+
+### colorspace 패키지 
+
+`colorspace` 패키지는 아주 광범위한 기능을 제공하는 패키지인데 여기선 팔레트를 선택하는 방법에 초점을 맞추어 설명하고자 한다. 
+
+- `hcl_palettes()` 함수는 팔레트의 속성과 색상을 확인하는 데 사용된다. `plot = TRUE`가 없으면 이름을 출력하고, 있으면 이것을 색으로 디스플레이한다. 
+
+```{r}
+library(colorspace)
+hcl_palettes()
+hcl_palettes(plot = TRUE)
+```
+
+- `qualitative_hcl()`, `sequential_hcl()`, `diverging_hcl()` 함수는 각각 퀄리티브, 시퀀셜, 다이버징 팔레트를 생성하는 데 사용된다. `n`은 색의 개수이고, `palette`는 위에서 본 팔레트 가운데 선택하여 입력한다. 
+
+```{r}
+qualitative_hcl(n = 5, palette = "Dark 3")
+sequential_hcl(n = 5, palette = "Blues 3")
+diverging_hcl(n = 5, palette = "Blue-Red 3")
+```
+
+- `demoplot()` 함수에 첫 번째 인자에서 앞에서 만든 팔레트를 주고, `type` 인자에  "map", "heatmap", "scatter", "spine", "bar", "pie", "perspective", "mosaic", "lines" 중 하나를 선택하여 입력하여, 해당 팔레트를 사용하여 간단한 플롯을 만들어 볼 수 있는 함수이다.
+
+```{r}
+q5 <- qualitative_hcl(n = 5, palette = "Dark 3")
+demoplot(q5, type = "map")
+demoplot(q5, type = "heatmap")
+demoplot(q5, type = "scatter")
+```
+
+- 만약 앞에서 만든 `q5` 팔레트를 사용하고 싶다면 다음과 같이 `ggplot2` 패키지의 `scale_color_manual()` 함수를 사용하면 된다.
+```{r}
+ggplot(penguins) +
+    geom_point(aes(x = bill_len, y = bill_dep, color = species)) +
+    scale_color_manual(values = q5)
+```
+
+- `hcl_wizard()` 함수는 `colorspace` 패키지의 모든 기능을 시각적으로 확인하고, 색 팔레트 값을 변환하는 Shiny 앱을 실행한다.
+
+```{r}
+#| eval: false
+pl <- hcl_wizard()
+```
+
+![`hcl_wizard()`으로 실행한 Shiny 앱](images/hcl-wizard.png)
+
+만약 위와 같이 실행했다가 Shiny 앱을 종료하고 나면 `pl`이라는 함수를가 생성된다. 여기에 `pl(5)` 같이 색의 개수를 주면 해당 팔레트에 기반한 색상을 반환한다. 
+
+
+
+
+## 매뉴얼로 자신의 원하는 임의의 색상 사용하기 
+
+`ggplot2` 패키지는 거의 대부분의 매핑이라는 **데이터의 값에 따라서** 뭔가를 하도록 하게 되어 있다. 그런데 가끔은 사용자의 임의의 색상을 사용하고 싶을 때가 있다. 
+
+이런 경우는 [Create your own discrete scale](https://ggplot2.tidyverse.org/reference/scale_manual.html) 도움말 폐이지를 참고한다. 특히n `scale_*_manual()` 스케일 함수들의 `values` 인자에 주목한다. 이름을 가진 벡터를 사용하면 해당 변수에 임의의 색상을 지정할 수 있다. 
+
+```{r}
+# 오륜기 색을 사용
+library(dplyr)
+library(gapminder)
+gapminder %>%
+    mutate(continent = continent) %>%
+    ggplot() +
+    geom_bar(aes(x = continent, fill = continent)) +
+    scale_fill_manual(
+        values = c(
+            "Africa" = "#000000", "Americas" = "steelblue",
+            "Asia" = "#FFA300", "Europe" = "#0057B8",
+            "Oceania" = "#009B3A"
+        )
+    )
+```
+
+
+## 정리
+
+- `ggplot2` 패키지에서 팔레트 사용하는 방법은 [ColorBrewer 기반 스케일](https://ggplot2.tidyverse.org/reference/scale_brewer.html)를 참고한다
+
+- `colorspace` 패키지는 색상 팔레트의 생성과 선택을 돕는 패키지로, 색 관련한 가장 포괄적인 기능들을 제공한다. 
+
+
+

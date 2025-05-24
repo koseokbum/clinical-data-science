@@ -4,10 +4,10 @@ language: _language-ko.yml
 
 
 book:
-  title: "SVH Neurology Code, Stats & AI"
-  page-footer: "The Catholic University of Korea, ST. Vincent’s Hospital, Department of Neurology" 
+  title: 'SVH Neurology Code, Stats & AI (with R)'
+  page-footer: "The Catholic University of Korea, ST. VINCENT'S HOSPITAL, Department of Neurology" 
   author:
-  - name: "임상 데이터 과학팀"
+  - name: "임상 데이터 과학"
     affiliation: 
       - name: 성빈센트병원, 신경과
         city: Suwon-si
@@ -15,6 +15,8 @@ book:
         country: Republic of Korea
         url: https://www.cmcvincent.or.kr/page/main
   reader-mode: true
+  downloads: "pdf"
+  output-file: "R-language-for-neurology"
   repo-url: "https://github.com/koseokbum/clinical-data-science"
   # cover-image: "images/cds.png"
   sidebar:
@@ -31,6 +33,7 @@ book:
         - condition-function.qmd
         - packages.qmd
         - formula.qmd
+        - pipes.qmd
     - part: tidyverse.qmd
       chapters:
         - tidydata.qmd
@@ -41,20 +44,27 @@ book:
         - relational-dplyr.qmd
         - windowing.qmd
         - stringr.qmd
-    - part: visualize.qmd
+        - regex.qmd
+        - lubridate.qmd
+        - janitor.qmd
+    - part: data-understanding.qmd
       chapters: 
         - ggplot2.qmd
-
-    - part: "의학 통계"
-      chapters: 
+        - ggplot2-colors.qmd
+        - stats.qmd
+        - factor-order.qmd
+        - plot-customizing.qmd
+        - stat-plots.qmd
+    # - part: "의학 통계"
+    #   chapters: 
         # - basic-stats.qmd
-        - descriptive.qmd
-        - gtsummary-descriptive.qmd
-        - clt.qmd
-    - part: "Tidymodels을 사용한 통계 분석"
+        # - descriptive.qmd
+        # - gtsummary-descriptive.qmd
+        # - clt.qmd
+    - part: "Tidymodels를 사용한 통계 분석"
       chapters:
-        - infer.qmd
-
+        # - moderndive.qmd   
+        - infer-package.qmd
     - references.qmd
 
 
@@ -66,10 +76,27 @@ engine: knitr
 
 format:
   live-html:
-    theme:
-      light: cosmo
-      dark: darkly
     code-link: true
+    toc-depth: 4
+    theme:
+      light: [united] 
+      dark: darkly
+  pdf:
+    latex-engine: xelatex
+    include-in-header: hangul.tex
+    toc: true
+    number-sections: true
+    highlight-style: github
+    geometry:
+      - top=30mm
+      - left=20mm
+      - heightrounded
+    code-block-border-left: "#D3D3D3"
+
+    
+
+  
+  
 
 
 

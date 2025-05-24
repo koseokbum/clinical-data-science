@@ -1,49 +1,10 @@
-# [infer]{.style-text font-weight="bold" color="#66A61E"} 패키지로 가설 검정 
+# infer 패키지로 가설 검정(hypothesis testing)
 
-4 main verbs
+이 파트에서는 `infer` 패키지를 사용해서 가설 검정에 대해서 설명하고자 한다. R은 통계학의 언어로 base R과 여러 추가 패키지들을 통해서 통계 분석과 이 파트에서 설명할 가설 검정에 필요한 함수들을 많이 가지고 있다. 그렇지만 각자의 방식대로 작동하고 또 그렇게 이용된다. 
 
-- `specify()`: 변수 또는 변수 사이의 관계를 지정
-- `hypothesize()`: 귀무 가설을 선언 
-- `generate()`: 귀무 가설을 반영하는 데이터 생성
-- `calculate()`: 생성된 데이터로부터 통계량의 분포를 계산 
+우리는 의과대학에서 여러 가지 통계 방법론을 배웠고, 아마도 지금도 그렇게 가르키고 배울 것 같기도 하여, 그 자체가 고정된 수학적 절차로 보는 경향이 있다. 실제로는 전혀 그렇지 않다. 우리는 석기, 청동기, 철기 등등을 지나 이제는 "컴퓨터 시대(Computer age)"에 살고 있다.
 
+- [Computer Age Statistical Inference: Algorithms, Evidence and Data Science](https://hastie.su.domains/CASI/)
 
-![](https://raw.githubusercontent.com/tidymodels/infer/main/figs/ht-diagram.png)
-
-
-
-
-```{r}
-library(infer)
-library(tidyverse)
-data(gss)
-glimpse(gss)
-```
-
-```{r}
-F_hat <- gss |>
-    specify(age ~ partyid) |>
-    calculate(stat = "F")
-F_hat
-```
-
-```{r}
-null_dist <- gss |>
-    specify(age ~ partyid) |>
-    hypothesize(null = "independence") |>
-    generate(reps = 1000, type = "permute") |>
-    calculate(stat = "F")
-null_dist
-```
-
-```{r}
-visualize(null_dist) +
-    shade_p_value(obs_stat = F_hat, direction = "greater")
-```
-
-
-```{r}
-null_dist %>%
-    get_p_value(obs_stat = F_hat, direction = "greater")
-```
-
+이 파트에서는 이런 추세와 철학에도 맞고, 일관된 방식으로 가설 검정이라는 주제에 다가설 수 있는 `infer` 패키지를 소개하려고 한다.
+ 

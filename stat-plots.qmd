@@ -1,0 +1,52 @@
+# 주요 통계 그래프 모음 (작성중)
+
+이 장에서는 주요 통계 그래프를 만드는 방법을 설명한다. 
+
+## 분포(distirbution)을 보는 그래프 
+
+여기서에는 어떤 (연속형) 변수의 분포(distribution)을 보는 그래프들을 설명하고자 한다. 분포를 보는 그래프에는 다음과 같은 것들이 있다. 이들은 하나의 변수가 어떤 분포를 가지는지를 시각화한다. 서로 다른 변수의 분포를 비교하기 위해서 하나의 그래프 안에 여러 분포을 시각화하기도 한다. 
+
+- 히스토그램 (histogram)
+- 밀도 플롯(density plot): 커널 밀도 추정 (kernel density estimation)
+- 박스 플롯 (box plot)
+- 바이올린 플롯 (violin plot)
+- 릿지 플롯(ridge plot)
+
+
+```{r}
+#| message: false
+library(ggplot2)
+library(dplyr)
+df <- readRDS("data/stroke_df.rds")
+glimpse(df)
+```
+
+
+```{r}
+#| fig-cap: "히스토그램"
+ggplot(df, aes(x = age)) +
+  geom_histogram(binwidth = 5, fill = "steelblue", color = "white") +
+  labs(title = "Histogram of Age", x = "Age", y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(df, aes(x = age)) +
+  geom_histogram(aes(y = after_stat(density)), binwidth=5) +
+  labs(title = "Histogram of Age", x = "Age", y = "Count") +
+  theme_minimal()
+```
+
+
+```{r}
+ggplot(df, aes(x = age)) +
+  geom_density(fill="#69b3a2", color="#e9ecef", alpha=0.8) +
+  labs(title = "Histogram and Density Plot of Age", x = "Age", y = "Density") +
+  theme_minimal()
+```
+
+
+```{r}
+ggplot(diamonds, aes(price)) + 
+  geom_histogram(aes(y = after_stat(density)), binwidth = 500)
+```

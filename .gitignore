@@ -6,3 +6,4 @@ _publish.yml
 _book/
 
 /.quarto/
+.DS_Store
