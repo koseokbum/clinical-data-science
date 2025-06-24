@@ -1,0 +1,304 @@
+# 일원 분산 분석([One-way ANOVA]{.style-text font-weight="bold" color="#023FA5"}) {#sec-one-way-anova}
+
+ [@sec-sum-squared]장에서 분산분석의 기본 원리를 보았다. 이 장에서는 일원 분산분석(one-way ANOVA)에 대해 알아보자. 
+
+- 하나의 양적 종속 변수  
+- 하나의 범주형 독립 변수
+ 
+예를 들어, 세 가지 다른 치료 방법이 환자의 혈압에 미치는 영향을 비교하고자 할 때, 치료 방법이 독립 변수이고 혈압이 종속 변수(dependent variable)가 된다.
+
+먼저 분산분석의 가정들에 대해 알아보고 난 후 실제 R 코드를 통해 분산분석을 수행하는 방법을 보자. 
+
+
+## 등분산 가정(homogeneity of variance, homoscedasticity)
+
+교과서에 따르면 ANOVA는 등분산 가정을 전제로 한다. 그 의미를 알아보자.
+
+::: {.callout}
+## 등분산 가정
+이것은 **모든 집단의 모분산이 동일하다는 가정**이다. 즉, 여러 개의 그룹이 있을 때, 각 그룹의 관측값들이 퍼져 있는 정도(분산)가 서로 같아야 한다는 것을 의미한다.
+
+$$
+\sigma_1^2 = \sigma_2^2 = \dots = \sigma_k^2
+$$
+
+- $\sigma_i^2$: i번째 그룹의 모분산
+- $k$: 그룹의 개수
+
+등분산 가정이 충족되지 않으면 ANOVA의 결과가 왜곡될 수 있다.
+:::
+
+왜 그럴까? ANOVA는 그룹 간의 평균 차이를 검정하는 방법인데 F-통계량을 사용한다. F-통계량은 다음과 같이 계산된다.
+
+$$
+F = \frac{SSg/df1}{SSr/df2}=\frac{MS_{\text{between}}}{MS_{\text{within}}}
+$$
+
+4 개의 그룹이 있다고 가정해 보자. 3개의 그룹은 분산이 비슷한데, 1개의 그룹은 분산이 크게 다르다고 가정해 보자. 이 경우 F-통계량은 이 크게 다른 1개의 그룹에 의해 크게 영향을 받게 된다. 즉, 분산이 다른 그룹이 존재하면 F-통계량이 왜곡되어 ANOVA의 결과가 신뢰할 수 없게 된다. 어떻게 보면 Simpson의 역설(Simpson's paradox)과 비슷하다.
+
+### 등분산 가정을 검정 
+
+등분산 가정을 검정하는 방법은 여러 가지가 있다. 가장 많이 사용되는 방법은 **Levene's test**와 **Bartlett's test**이다. 먼저 시각화를 통해서 각 그룹의 분산이 비슷한지 확인할 수 있다. 예를 들어, `ggplot2` 패키지를 사용하여 상자 그림(boxplot)을 그려보자. `palmerpenguins` 패키지에 있는 펭귄 데이터를 사용하여 각 종별 몸무게의 분포를 시각화해 보자. 
+
+```{r}
+#| message: false
+library(tidyverse)
+library(palmerpenguins)
+library(showtext)
+showtext_auto()
+```
+
+먼저 박스 플롯을 보자. 박스 플롯은 상자의 중앙값, 사분위수, 이상치 등을 시각적으로 보여준다. 박스 플롯을 통해 각 그룹의 분포와 분산에 대해 감을 잡을 수 있다. 박스의 높이가 얼마나 같은지 보면 될 것이다.
+
+```{r}
+penguins %>%
+  ggplot(aes(x = species, y = body_mass_g)) +
+  geom_boxplot() +
+  labs(title = "펭귄 종별 몸무게 분포")
+```
+
+히스토그램 또는 밀도 그래프를 사용하여 각 그룹의 분포를 시각적으로 확인할 수도 있다. 밀도 그래프는 각 그룹의 분포를 부드럽게 나타내어 분산을 비교하는 데 유용하다. 이 경우에는 분포의 폭이 얼마나 비슷한지 확인하면 된다.
+
+```{r}
+penguins %>%
+  ggplot(aes(fill = species, x = body_mass_g)) +
+  geom_density(alpha=0.5) +
+  labs(title = "펭귄 종별 몸무게 분포")
+```
+
+시각적으로 보면 Gentoo 펭귄의 몸무게 분포가 다른 종들에 비해 더 넓은 편이다. 즉, Gento 펭귄의 몸무게 분산이 다른 종들에 비해 더 크다는 것을 알 수 있다.
+
+이제 Levene's test를 수행해 보자. Levene's test는 각 그룹의 분산이 동일한지 검정하는 방법이다. `car` 패키지의 `leveneTest()` 함수를 사용하여 Levene's test를 수행할 수 있다.
+
+```{r}
+#| message: false
+library(car)
+leveneTest(body_mass_g ~ species, data = penguins) |> 
+  broom::tidy()
+```
+
+결과를 보면 p-value가 0.05보다 작으므로, 등분산 가정이 충족되지 않는다는 것을 알 수 있다. 
+
+::: {.callout}
+## Levene's test의 결과를 보고하는 방법 
+
+- ChatGPT에 질문하자: "leveneTest 결과를 논문에 보고하려면 어떻게 기술하는 것이 좋아요?" 다음과 같은 답변을 얻었다.
+
+------------
+
+Levene's test 결과를 논문에 보고할 때는 다음과 같은 형식을 사용할 수 있습니다. 이 형식은 독자가 결과를 명확하게 이해할 수 있도록 필요한 정보를 포함합니다.
+
+1. **검정의 목적**: Levene's test가 수행된 이유를 간단히 설명합니다.
+2. **검정 통계량과 자유도**: Levene's test의 F-통계량과 자유도를 명시합니다.
+3. **p-value**: 검정의 p-value를 보고합니다.
+4. **결론**: 등분산 가정이 충족되었는지 여부를 설명합니다.
+
+예시:
+
+"In order to test the assumption of homogeneity of variances across groups, Levene's test was conducted. The results indicated a significant difference in variances (F(2, 147) = 5.23, p = 0.006), suggesting that the assumption of equal variances was violated."
+
+이 예시에서:
+- `F(2, 147)`는 F-통계량과 그에 대한 자유도를 나타냅니다.
+- `5.23`은 F-통계량의 값입니다.
+- `p = 0.006`은 p-value를 나타내며, 일반적으로 0.05보다 작으면 등분산 가정이 충족되지 않았다고 결론을 내립니다.
+
+이 형식을 참고하여, 실제 데이터에 맞게 F-통계량, 자유도, p-value를 대체하여 작성하시면 됩니다.
+
+:::
+
+또다른 방법으로 **Bartlett’s test**가 있다. 이것도 정규성을 가정하는 등분산 검정 방법인데, 비모수적인 방법이며 데이터가 정규성을 만족할 때 사용한다. `bartlett.test()` 함수를 사용하여 Bartlett’s test를 수행할 수 있다.
+
+```{r}
+bartlett.test(body_mass_g ~ species, data = penguins) |> 
+  broom::tidy()
+```
+
+이 경우에는 p-value가 거의 경계에 걸쳐 있다.
+
+결과가 이렇게 나오면 그룹들간의 등분산을 가정하는 일반적인 ANOVA 분석을 수행한다면 결과가 왜곡될 수 있음을 의미한다. 이런 경우에는 Welch's ANOVA를 사용하는 것이 권고되며, 베이스 R의 `oneway.test()` 함수를 사용하는데 아래 예시와 같이 `var.equal = FALSE` 인자를 사용하여 분산이 같다는 조건을 무시하게 한다.
+
+```{r}
+#| message: false
+oneway.test(body_mass_g ~ species, data = penguins, var.equal = FALSE) |> 
+  broom::tidy()
+```
+
+### 잔차의 정규성 가정(normality assumption)
+
+교과서에 따르면 ANOVA는 정규성 가정을 전제로 한다. 그 의미를 알아보자.
+
+::: {.callout}
+## 정규성 가정
+
+ANOVA에서의 정규성 가정은 **잔차(residuals)**가 정규분포를 따른다는 가정이다. 헷갈리지 말아야 하는 것은 반응 변수(response variable)가 정규분포를 따른다는 것이 아니라, ANOVA 모델에서 예측값과 실제 관측값의 차이인 잔차가 정규분포를 따른다는 것이다.
+
+그런데 이 가정의 중요도는 샘플이 작을 때는 상당히 중요하지만, 샘플이 충분히 크면(일반적으로 30개 이상의 관측치가 있는 경우)에는 정규성 가정이 크게 문제가 되지 않는다. 이는 중심극한정리에 의해, 샘플의 크기가 커질수록 표본 평균이 정규분포에 가까워지기 때문이다.
+:::
+
+왜 이런 가정이 필요할까? ANOVA에서 사용되는 F-통계량과 F-분포는 이러한 가정에 바탕을 두고 만들어진 도구이기 때문이다.
+
+앞에 `penguins` 데이터에 대해 ANOVA를 수행했을 때의 잔차(residual)를 먼저 확인해 보자. 잔차는 모델의 예측값과 실제 관측값의 차이로, ANOVA 모델을 적합한 후 `augment()` 함수를 사용하여 잔차를 추출할 수 있다.
+
+```{r}
+df <- penguins |> 
+    select(species, body_mass_g)
+result <- aov(body_mass_g ~ species, data = df) |> 
+  broom::augment() 
+result
+```
+
+이 결과에서 `.resid` 열이 잔차이다. 실제 값 `body_mass_g`에서 예측값(`.fitted`)을 뺀 값이다. 이 값들이 정규분포를 따라야 한다는 가정인 것이다.
+
+
+잔차의 정규성을 시각적으로 확인하기 위해 Q-Q 플롯(Quantile-Quantile Plot)을 그려보자. Q-Q 플롯은 데이터의 분포가 정규분포와 얼마나 유사한지를 시각적으로 보여준다.
+
+::: {.callout}
+## Q-Q 플롯
+
+Q-Q 플롯은 데이터의 분위수(quantile)를 이론적인 정규분포의 분위수와 비교하여 그린 그래프이다. 만약 데이터가 정규분포를 따른다면, Q-Q 플롯에서 점들이 대각선에 가깝게 분포해야 한다. 만약 점들이 대각선에서 벗어난다면, 데이터가 정규분포를 따르지 않는다는 것을 의미한다.
+:::
+
+```{r}
+result |> 
+  ggplot(aes(sample = .resid)) +
+  stat_qq() +
+  stat_qq_line() +
+  labs(title = "Q-Q Plot of Residuals")  +
+  theme_minimal()
+```
+
+히스토그램도 그려보자. 히스토그램은 잔차의 분포를 시각적으로 보여준다. 정규분포를 따르는 경우, 히스토그램은 종 모양의 곡선을 나타내야 한다.
+
+```{r}
+result |> 
+  ggplot(aes(x = .resid)) +
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "lightblue", color = "black") +
+  stat_function(fun = dnorm, args = list(mean = mean(result$.resid), sd = sd(result$.resid)), color = "red") +
+  labs(title = "Histogram of Residuals with Normal Curve") +
+  theme_minimal()
+```
+
+잔차의 정규성을 검정하는 방법으로는 **Shapiro-Wilk test**가 있다. 이 검정은 잔차가 정규분포를 따르는지 여부를 판단하는 데 사용된다. `shapiro.test()` 함수를 사용하여 Shapiro-Wilk test를 수행할 수 있다. 귀무가설은 잔차가 정규분포를 따른다는 것이다. 따라서 p-value가 0.05보다 작으면 귀무가설을 기각하고, 잔차가 정규분포를 따르지 않는다고 결론 내린다.
+
+```{r}
+shapiro.test(result$.resid) |> 
+  broom::tidy()
+```
+
+위 결과를 보면 p-value가 0.05보다 크므로 잔차가 정규분포를 따른다고 결론 내릴 수 있다.
+
+::: {.callout}
+## Shapiro-Wilk test의 결과를 보고하는 방법
+
+- ChatGPT에 질문하자: "shapiro.test 결과를 논문에 보고하려면 어떻게 기술하는 것이 좋아요?" 다음과 같은 답변을 얻었다.
+
+------------
+Shapiro-Wilk test 결과를 논문에 보고할 때는 다음과 같은 형식을 사용할 수 있습니다. 이 형식은 독자가 결과를 명확하게 이해할 수 있도록 필요한 정보를 포함합니다.
+
+1. **검정의 목적**: Shapiro-Wilk test가 수행된 이유를 간단히 설명합니다.
+2. **검정 통계량과 p-value**: Shapiro-Wilk test의 W-통계량과 p-value를 명시합니다.
+3. **결론**: 잔차가 정규분포를 따르는지 여부를 설명합니다.
+
+예시:
+
+"In order to assess the normality of residuals, Shapiro-Wilk test was conducted. The results indicated that the residuals were normally distributed (W = 0.95, p = 0.12)."
+
+이 예시에서:
+
+- `W = 0.95`는 Shapiro-Wilk test의 W-통계량을 나타냅니다.
+- `p = 0.12`는 p-value를 나타내며, 일반적으로 0.05보다 크면 잔차가 정규분포를 따른다고 결론을 내립니다.
+
+이 형식을 참고하여, 실제 데이터에 맞게 W-통계량과 p-value를 대체하여 작성하시면 됩니다.
+:::
+
+### 독립성 가정(independence assumption)
+
+교과서에 따르면 ANOVA는 독립성 가정을 전제로 한다. 그 의미는 다음과 같다. 
+
+
+::: {.callout}
+## 독립성 가정
+
+ANOVA에서의 독립성 가정은 **각 그룹의 관측치가 서로 독립적이어야 한다는 가정**이다. 즉, 한 그룹의 관측치가 다른 그룹의 관측치에 영향을 미치지 않아야 한다는 것이다.
+
+이 가정은 ANOVA의 기본 전제 중 하나로, 그룹 간의 차이를 정확하게 평가하기 위해 필요하다. 만약 관측치가 독립적이지 않다면, ANOVA의 결과가 왜곡될 수 있다. 예를 들어, 같은 사람에게서 반복 측정한 데이터는 독립적이지 않다. 이 경우에는 ANOVA 대신에 반복 측정 ANOVA(repeated measures ANOVA)나 혼합 효과 모델(mixed effects model)을 사용해야 한다.
+:::
+
+이 가정은 실험 설계에서 중요한 요소로, 각 그룹의 관측치가 서로 영향을 미치지 않도록 설계되어야 한다. 예를 들어, 동일한 피험자에게서 여러 번 측정한 데이터는 독립적이지 않으므로 ANOVA를 적용할 수 없다. 이 경우에는 반복 측정 ANOVA(repeated measures ANOVA)나 혼합 효과 모델(mixed effects model)을 사용해야 한다.
+
+동물실험을 하는 경우, 같은 어미가 같은 형제들(siblings)을 대상으로 어떤 실험을 할 수 있을 것이다. 이 경우에는 어미가 같은 형제들끼리는 독립적이지 않다. 따라서 ANOVA를 적용할 수 없다. 
+
+### 펭귄 데이터에 대한 ANOVA 가정 결과와 Welch's ANOVA
+
+위 결과를 요약하면 다음과 같다.
+
+- 등분산 가정: Levene's test 결과 p-value가 0.05보다 작아 등분산 가정이 충족되지 않음
+- 정규성 가정: Shapiro-Wilk test 결과 p-value가 0.05보다 크므로 잔차가 정규분포를 따름
+- 독립성 가정: 데이터가 독립적이라고 가정
+
+즉, 등분산 가정을 충족하지 않으므로 이 위에서 본 Welch's ANOVA를 사용해야 한다. 위에서 본 결과는 다음과 같다.
+
+```{r}
+anova_result <- oneway.test(body_mass_g ~ species, data = penguins, var.equal = FALSE)
+anova_result
+```
+
+::: {.callout}
+## Welch's ANOVA 결과를 보고하는 방법
+- ChatGPT에 질문하자: "Welch's ANOVA 결과를 논문에 보고하려면 어떻게 기술하는 것이 좋아요?" 다음과 같은 답변을 얻었다.
+
+------------
+
+Welch's ANOVA 결과를 논문에 보고할 때는 다음과 같은 형식을 사용할 수 있습니다. 이 형식은 독자가 결과를 명확하게 이해할 수 있도록 필요한 정보를 포함합니다.
+
+1. **검정의 목적**: Welch's ANOVA가 수행된 이유를 간단히 설명합니다.
+2. **검정 통계량과 자유도**: Welch's ANOVA의 F-통계량과 자유도를 명시합니다.
+3. **p-value**: 검정의 p-value를 보고합니다.
+4. **결론**: 그룹 간의 평균 차이가 유의미한지 여부를 설명합니다.
+
+예시:
+
+"In order to compare the means of body mass across different penguin species, Welch's ANOVA was conducted. The results indicated a significant difference in means (F(2, 147) = 5.23, p = 0.006), suggesting that at least one group mean is significantly different from the others."
+
+이 예시에서:
+- `F(2, 147)`는 F-통계량과 그에 대한 자유도를 나타냅니다.
+- `5.23`은 F-통계량의 값입니다.
+- `p = 0.006`은 p-value를 나타내며, 일반적으로 0.05보다 작으면 그룹 간의 평균 차이가 유의미하다고 결론을 내립니다.
+
+:::
+
+
+## 다중비교 
+
+ANOVA를 수행한 후, 그룹 간의 평균 차이가 유의미하다는 결과가 나왔다면, 어떤 그룹 간에 차이가 있는지를 알아보기 위해 **다중비교(multiple comparisons)**를 수행해야 한다. 보통 Tukey의 HSD(Honestly Significant Difference) 검정을 많이 사용한다. 그런데 이 경우에는 그룹 간의 분산이 다르므로 Tukey의 HSD 검정을 수행할 수 없다. 이 경우에는 다른 방법을 사용해야 한다.  `Games-Howell 검정`도 그런 방법 중 하나이다. `rstatix` 패키지에 있는 `games_howell_test()` 함수를 사용하였다.
+
+```{r}
+library(rstatix)
+penguins |> 
+  games_howell_test(body_mass_g ~ species)
+```
+
+::: {.callout}
+## Games-Howell 검정 결과를 보고하는 방법
+
+- ChatGPT에 질문하자: "Games-Howell 검정 결과를 논문에 보고하려면 어떻게 기술하는 것이 좋아요?" 다음과 같은 답변을 얻었다.
+
+------------
+
+Games-Howell 검정 결과를 논문에 보고할 때는 다음과 같은 형식을 사용할 수 있습니다. 이 형식은 독자가 결과를 명확하게 이해할 수 있도록 필요한 정보를 포함합니다.
+
+1. **검정의 목적**: Games-Howell 검정이 수행된 이유를 간단히 설명합니다.
+2. **검정 통계량과 자유도**: Games-Howell 검정의 t-통계량과 자유도를 명시합니다.
+3. **p-value**: 검정의 p-value를 보고합니다.
+4. **결론**: 그룹 간의 평균 차이가 유의미한지 여부를 설명합니다.
+
+예시:
+
+"In order to compare the means of body mass across different penguin species, Games-Howell post-hoc test was conducted. The results indicated significant differences between Adelie and Chinstrap penguins (t(147) = 3.45, p = 0.001) and between Adelie and Gentoo penguins (t(147) = 4.12, p < 0.001), suggesting that both groups have significantly different means."
+
+이 예시에서:
+
+- `t(147)`는 t-통계량과 그에 대한 자유도를 나타냅니다.
+- `3.45`와 `4.12`는 t-통계량의 값입니다.
+- `p = 0.001`과 `p < 0.001`은 p-value를 나타내며, 일반적으로 0.05보다 작으면 그룹 간의 평균 차이가 유의미하다고 결론을 내립니다. 
+:::

@@ -6,7 +6,7 @@ knitr:
     fig-align: center
 ---
 
-# `ggplot2` 레이어([layers]{.style-text font-weight="bold" color="#7570B3"})와 통계적 변환([stats]{.style-text font-weight="bold" color="#7570B3"}) (정리중)
+# `ggplot2` 레이어([layers]{.style-text font-weight="bold" color="#7D87B9"})와 통계적 변환([stats]{.style-text font-weight="bold" color="#7D87B9"})
 
 ```{r}
 #| message: false

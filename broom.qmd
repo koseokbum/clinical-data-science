@@ -1,0 +1,94 @@
+# 통계 분석 결과의 활용도를 높여주는 [broom]{.style-text font-weight="bold" color="#023FA5"} 패키지 
+
+전통적인 base R에서 통계 분석 결과(통계적 모델)를 활용하는 방법은 `summary()` 함수를 사용하는 것이다. 하지만 이 방법은 결과를 데이터프레임으로 변환할 수 없고, 결과를 정리하기도 어렵다. 다음 예를 보자.
+
+## 전통적 통계 분석과 활용법 
+
+[@sec-r-formula] 장에서 보았던 귀뚜라미(crickets) 데이터셋을 사용하여 귀뚜라미의 초당 소리 횟수(`rate`)와 온도(`temp`), 아종(`species`) 간의 관계를 분석한 예이다. 
+
+```{r}
+#| message: false
+library(tidyverse)
+data(crickets, package = "modeldata")
+interaction_fit <- lm(rate ~ temp * species, data = crickets)
+```
+
+`lm()` 함수를 사용하여 선형 회귀 모델을 만들었다. 이 모델은 온도와 아종이 초당 소리 횟수에 미치는 영향을 분석한다. 이렇게 만들어진 모델 객체를 `interaction_fit` 변수에 저장했다. 보통 이 객체를 출력해 보거나, `summary()` 함수를 사용하여 결과를 확인한다.
+
+```{r}
+attributes(interaction_fit)
+```
+
+이 가운데 잔차(residuals)와 회귀 계수(coefficients)를 확인해 보자.`
+```{r}
+interaction_fit$residuals
+interaction_fit$coefficients
+```
+
+또는 이 객체를 `summary()` 함수를 사용하여 요약할 수 있다.
+
+```{r}
+result_summary <- summary(interaction_fit)
+result_summary
+```
+
+이렇게 만들어진 객체에 대해 여러 속성(attributes)을 확인할 수 있다. 예를 들어 회귀 계수, 결정 계수, 조정된 결정 계수, F-통계량 등을 확인할 수 있다.
+
+```{r}
+result_summary$coefficients
+result_summary$r.squared
+result_summary$adj.r.squared
+result_summary$fstatistic
+```
+
+베이스 R에서는 `t.test()`, `aov()`, `lm()` 등 통계 분석 함수를 사용하여 모델을 만들고, 그 결과를 `summary()` 함수를 사용하여 요약하는 것이 일반적이다. 그런데 이렇게 하는 경우는 다음 단계의 분석이나 시각화 등 후속 작업을 하기에 불편한다. 이런 불편을 해소하기 위해 `broom` 패키지가 만들어졌다.
+
+## `broom` 패키지 소개
+
+[`broom` 패키지](https://broom.tidyverse.org/)는 통계 분석 결과를 깔끔하게 정리하여 데이터프레임 형태로 변환해 주는 패키지이다. 이 패키지의 주 함수는 다음 3가지이다.
+
+1. `broom::tidy()`: 통계 분석 결과를 데이터프레임 형태로 변환한다.
+2. `broom::glance()`: 통계 분석 결과의 요약 정보를 데이터프레임 형태로 변환한다.
+3. `broom::augment()`: 통계 분석 결과를 원본 데이터에 추가하여 데이터프레임 형태로 변환한다.
+
+```{r}
+library(broom)
+```
+
+`broom`이 지원하는 통계 모델은 `lm()`, `glm()`, `nls()`, `lmer()`, `glmer()`, `gam()` 등 다양한 모델을 지원한다. 패키지 비니에트 "Available methods"를 참고하면 어떤 모델이 지원되는지 확인할 수 있다.
+
+
+## `broom` 패키지로 통계 분석 결과 정리하기
+
+`broom` 패키지를 사용하여 통계 분석 결과를 정리해 보자. 먼저 `tidy()` 함수를 사용하여 회귀 계수와 잔차를 데이터프레임 형태로 변환한다.
+
+```{r}
+tidy_result <- tidy(interaction_fit)
+tidy_result
+```
+`tidy()` 함수는 통계 분석 결과를 데이터프레임 형태로 변환하여, 각 회귀 계수와 그에 대한 통계적 검정 결과를 포함한다. 이 데이터프레임은 `term`, `estimate`, `std.error`, `statistic`, `p.value` 등의 열을 포함한다.
+
+이제 `glance()` 함수를 사용하여 모델의 요약 정보를 데이터프레임 형태로 변환하자.
+
+```{r}
+glance_result <- glance(interaction_fit)
+glance_result
+```
+
+`glance()` 함수는 모델의 요약 정보를 데이터프레임 형태로 변환하여, 결정 계수, 조정된 결정 계수, F-통계량, p-value 등의 정보를 포함한다. 이 데이터프레임은 모델의 전반적인 성능을 평가하는 데 유용하다.
+
+
+이제 `augment()` 함수를 사용하여 원본 데이터에 통계 분석 결과를 추가한다.
+
+```{r}
+augment_result <- augment(interaction_fit)
+augment_result
+```
+`augment()` 함수는 원본 데이터에 통계 분석 결과를 추가하여, 각 관측치에 대한 예측값, 잔차, 표준화된 잔차 등을 포함하는 데이터프레임을 생성한다. 이 데이터프레임은 모델의 적합도를 평가하고, 이상치를 식별하는 데 유용하다.
+
+
+
+
+
+
+

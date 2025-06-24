@@ -6,7 +6,7 @@ knitr:
     fig-height: 4
 ---
 
-# [ggplot2]{.style-text font-weight="bold" color="#7570B3"} 통계 그래픽의 기초 
+# [ggplot2]{.style-text font-weight="bold" color="#7D87B9"} 통계 그래픽의 기초 
 
 `ggplot2` 패키지의 `gg`는 `grammer of graphics`의 약자로, 그래프의 문법을 말한다. 이 패키지는 통계학자 `Leland Wilkinson`가 "The Grammar of Graphics"라는 책으로 개념을 정리한 **통계 그래픽의 문법**에 바탕을 두고, 해들리 위캄(Hadley Wickham) 등이 R 언어로 구현한 것이다. 
 

@@ -1,13 +1,11 @@
 project:
   type: book
 language: _language-ko.yml
-
-
 book:
   title: 'SVH Neurology Code, Stats & AI (with R)'
   page-footer: "The Catholic University of Korea, ST. VINCENT'S HOSPITAL, Department of Neurology" 
-  author:
-  - name: "임상 데이터 과학"
+  author: 
+  - name: "sbko"
     affiliation: 
       - name: 성빈센트병원, 신경과
         city: Suwon-si
@@ -18,12 +16,14 @@ book:
   downloads: "pdf"
   output-file: "R-language-for-neurology"
   repo-url: "https://github.com/koseokbum/clinical-data-science"
-  # cover-image: "images/cds.png"
+  cover-image: "images/cds.png"
   sidebar:
     logo: "images/cds.svg"
+    collapse-level: 1
+
   chapters:
     - index.qmd
-    - part: "R 언어의 기초: 가급적 learning curve를 완만하게"
+    - part: basic-r.qmd
       chapters:
         - setting-up.qmd
         - names-values.qmd
@@ -32,7 +32,6 @@ book:
         - factors.qmd
         - condition-function.qmd
         - packages.qmd
-        - formula.qmd
         - pipes.qmd
     - part: tidyverse.qmd
       chapters:
@@ -47,7 +46,7 @@ book:
         - regex.qmd
         - lubridate.qmd
         - janitor.qmd
-    - part: data-understanding.qmd
+    - part: data-visualization.qmd
       chapters: 
         - ggplot2.qmd
         - ggplot2-colors.qmd
@@ -55,16 +54,33 @@ book:
         - factor-order.qmd
         - plot-customizing.qmd
         - stat-plots.qmd
+        - patchwork.qmd
     # - part: "의학 통계"
     #   chapters: 
         # - basic-stats.qmd
         # - descriptive.qmd
         # - gtsummary-descriptive.qmd
-        # - clt.qmd
-    - part: "Tidymodels를 사용한 통계 분석"
+        # - clt.qmd          p
+    - part: rstats.qmd
       chapters:
+        - formula.qmd
+        - broom.qmd
+        - p-value.qmd
+        # - simpson.qmd
+        - two-sample-means.qmd
+        - correlation.qmd
+        - sum-squared.qmd
+        - one-anova.qmd
+        - two-anova.qmd
         # - moderndive.qmd   
+        - contingency.qmd
+        - chisq.qmd
+        - diagnostic.qmd
         - infer-package.qmd
+    - part: notebook.qmd
+      chapters:
+        - computational-notebook.qmd
+
     - references.qmd
 
 
@@ -76,13 +92,16 @@ engine: knitr
 
 format:
   live-html:
+    grid:
+      sidebar-width: 400px
     code-link: true
     toc-depth: 4
+    css: css/styles.css
     theme:
       light: [united] 
       dark: darkly
   pdf:
-    latex-engine: xelatex
+    pdf-engine: xelatex
     include-in-header: hangul.tex
     toc: true
     number-sections: true

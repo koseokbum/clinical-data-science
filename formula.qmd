@@ -1,4 +1,4 @@
-# 통계를 하려면 꼭 알아야 하는 R 포뮬러([Formula]{.style-text font-weight="bold" color="#1B9E77"})
+# R로 통계를 하려면 꼭 알아야 하는 R 포뮬러([Formula]{.style-text font-weight="bold" color="#023FA5"}) {#sec-r-formula}
 
 R 언어에서는 통계적 모델(statistical model)을 표현하기 위해 **포뮬러(formula)**를 사용한다. R 언어의 관점에서는 이것 역시 벡터나 데이터프레임, 리스트와 같은 객체의 한 종류이다.
 

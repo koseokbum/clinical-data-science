@@ -1,0 +1,113 @@
+# 여러 그래프를 적절히 배치(patchwork)
+
+때로는 여런 그래프를 한 면에 배치할 필요가 있다. `patchwork` 패키지를 사용하면 여러 그래프를 쉽게 배치할 수 있다.
+
+- [patchwork 패키지 웹사이트](https://patchwork.data-imaginist.com/index.html)
+
+
+## 패키지 로딩과 예제 그래프 만들기
+
+먼저 `patchwork` 패키지를 (설치하고_ 불러온다.
+
+```{r}
+library(patchwork)
+library(ggplot2)
+library(showtext)
+showtext_auto()
+```
+
+`ggplot2` 패키지를 사용하여 다음 5개의 그래프를 생성하고, 이것을 `patchwork` 패키지를 사용하여 배치하고자 한다.
+
+```{r}
+# 예시 데이터
+data(mtcars)
+# 그래프 생성
+p1 <- ggplot(mtcars) + geom_point(aes(mpg, disp))
+p2 <- ggplot(mtcars) + geom_boxplot(aes(gear, disp, group = gear))
+p3 <- ggplot(mtcars) + geom_bar(aes(gear)) + facet_wrap(~cyl)
+p4 <- ggplot(mtcars) + geom_bar(aes(carb))
+p5 <- ggplot(mtcars) + geom_violin(aes(cyl, mpg, group = cyl))
+```
+
+## `+`, `-`, `/`, `()` 연산자를 사용한 배치 
+
+`+` 연산자는 그래프를 가급적 사각형 형태로 자동으로 배치한다. 디폴트는 행 우선으로 배치한다.
+
+```{r}
+# 그래프 배치
+p1 + p2 + p3 + p4 + p5
+```
+
+`+` 연산자를 사용하는 경우 (그래프들이 합쳐지는데) 마지막 그래프가 활성(active) 그래프가 된다. 
+
+```{r}
+# theme_minimal()을 추가하면 마지막 그래프에만 적용
+p1 + p2 + p3 + p4 + theme_minimal() 
+```
+
+`plot_layout()` 함수를 붙여서 그래프의 배치 형태를 지정할 수 있다. `ncol` 인자를 사용하여 열의 개수를 지정할 수 있다. `byrow = FALSE`로 설정하면 열 우선으로 배치된다. `widths` 인자를 사용하여 폭의 비를 지정할 수도 있다.
+
+```{r}
+p1 + p2 + p3 + p4 + p5 + plot_layout(ncol = 3)
+p1 + p2 + p3 + p4 + p5 + plot_layout(ncol = 3, byrow = FALSE)
+p1 + p2 + p3 + p4 + p5 + plot_layout(ncol = 3, 
+                            byrow = FALSE, widths = c(1, 2, 1))  
+```
+
+`plot_annotation()` 함수를 사용하여 합쳐진 전체에 대한 제목, 부제목, 캡션을 추가할 수 있다.
+
+```{r}
+p1 + p2 + p3 + p4 + p5 + 
+    plot_layout(ncol = 3, byrow = FALSE, widths = c(1, 2, 1)) +
+    plot_annotation(title = "여러 그래프 배치하기", 
+                    subtitle = "patchwork 패키지 사용",
+                    caption = "출처: ggplot2 예시 데이터 mtcars")
+```
+
+`-` 연산자도 있다. 비니에트에서는 빼기라기 보다는 대쉬(`-`)라고 생각하는 것이 좋다고 한다. `+` 연산자와 다른 점을 확인해 보자. 
+
+```{r}
+# `+` 연산자를 사용하면 그래프가 가로로 균등하게 배치
+p1 + p2 + p3 # <1>
+```
+
+
+```{r}  
+# 마지막 p3 그래프를 배치하고 나서 왼쪽 p1 + p2가 배치
+p1 +  p2  - p3 # <1>
+# 4 그래프가 마지막에 배치되고, 나머지 p1 + p2 + p3 그래프가 왼쪽에 균등하게 배치
+p1 +  p2  + p3 - p4 # <2>
+```
+
+`/` 연산자는 그래프를 아래 위로 쌓아서 배치한다. 다음 결과를 보면 `p2`가 `p3` 위에 배치되고 이것이 하나의 단위로 묶이는 것을 확인할 수 있다.
+
+```{r}
+# 그래프를 세로로 배치
+p1 + p2 / p3 + p4 + p5
+```
+
+`|`는 수평으로 배치한다. `()`는 수학의 괄호처럼 하나의 단위로 묶는다.
+
+```{r}
+# 그래프를 수평으로 배치
+p1 + (p2 | p3) + p4 + p5
+```
+
+##  `plot_annotation()` 함수 사용
+
+`plot_annotation()` 함수는 다음과 같은 기능을 제공한다. 전체 그래프의 제목, 부제목, 캡션을 추가하거나, 번호 같은 태그를 지정할 수 있다. 전체적으로 테마를 지정할 수도 있다.
+
+
+```{r}
+# 제목, 부제목, 캡션 추가
+p1 + p2 + p3 + p4 + p5 + 
+    plot_layout(ncol = 3, byrow = FALSE, widths = c(1, 2, 1)) +
+    plot_annotation(title = "여러 그래프 배치하기", 
+                    subtitle = "patchwork 패키지 사용",
+                    caption = "출처: ggplot2 예시 데이터 mtcars")
+```
+
+
+## 정리 
+
+굳이 모든 내용을 설명하지는 않았지만 이 패키지를 사용하면 동시에 여러 그래프를 배치해야할 필요가 있을 경우에는 매우 유용함을 잊지 말자. [웹사이트](https://patchwork.data-imaginist.com/index.html)에 자세한 내용이 있으니 참고하자.
