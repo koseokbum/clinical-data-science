@@ -1,9 +1,12 @@
 project:
   type: book
 language: _language-ko.yml
+
 book:
   title: 'SVH Neurology Code, Stats & AI (with R)'
   page-footer: "The Catholic University of Korea, ST. VINCENT'S HOSPITAL, Department of Neurology" 
+  date: last-modified
+  date-format: "YYYY년 MM월 DD일"
   author: 
   - name: "sbko"
     affiliation: 

@@ -513,6 +513,7 @@ dementia_age
 ```
 
 
+
 이 데이터를 사용하여 연령과 치매 발생 여부 간의 관계를 시각화해 보자. 먼저 나이에 따른 치매 발생 여부를 박스 플롯으로 나타내 보자.
 
 ```{r}
@@ -669,3 +670,48 @@ odds_ratio_75_70
 Odds Ratio(OR)와 Relative Risk(RR)는 모두 두 그룹 간의 위험을 비교하는 데 사용된다. 로지스틱 회귀 모델을 사용하는 경우에 Relative Risk는 구간에 따라 따른 값을 보이는 반면, Odds Ratio는 항상 일정한 값을 보인다.
 
 :::
+
+## Jamovi로 로지스틱 회귀 실행
+
+Jamovi는 R을 기반으로 한 오픈 소스 통계 소프트웨어로, 로지스틱 회귀 분석을 쉽게 수행할 수 있는 인터페이스를 제공한다. Jamovi에서 로지스틱 회귀를 실행하는 방법은 다음과 같다.
+
+
+### 데이터 불러오기 
+
+Jamovi를 실행하고 **Open** 버튼을 클릭하여 `dementia.csv` 파일을 불러온다. 이 파일은 치매 발생 여부와 나이 정보를 포함한다. 이 데이터는 깃허브 사이트^[<https://raw.githubusercontent.com/koseokbum/clinical-data-science/refs/heads/main/data/dementia.csv>]에서 다운로드할 수 있다.
+
+
+![데이터 읽기](images/jamovi-start.png){#fig-jamovi-start fig-align="center" width=80%}
+
+참고로 Jamovi는 다양한 데이터 형식을 지원하며, CSV 파일을 쉽게 불러올 수 있다. 엑셀 파일, SPSS 파일, SAS 파일 등도 지원한다.
+
+::: {.callout-tip}
+## CSV 파일(Comma-Separated Values)
+
+CSV 파일은 데이터를 쉼표로 구분하여 저장하는 텍스트 파일 형식이다. 각 행은 데이터의 한 레코드를 나타내며, 각 열은 변수(필드)를 나타낸다. CSV 파일은 간단하고 널리 사용되는 데이터 형식으로, 다양한 소프트웨어에서 쉽게 읽고 쓸 수 있다. 엑셀로 쉽게 열 수 있고, 엑셀 데이터도 CSV 형식으로 저장할 수 있다.
+
+CSV 파일은 다음과 같은 형식을 가진다.
+
+```
+이름,나이,성별
+홍길동,30,남
+김영희,25,여
+이순신,40,남
+```
+
+각 행은 쉼표로 구분된 값들로 구성되어 있으며, 첫 번째 행은 변수의 이름을 나타낸다. Jamovi에서는 CSV 파일을 불러올 때
+자동으로 변수의 이름을 인식하고, 데이터를 표 형식으로 표시한다.
+:::
+
+
+![데이터를 읽은 모습](images/jamovi-read-data.png){#fig-jamovi-read-data fig-align="center" width=80%}
+
+### 로지스틱 회귀 분석 실행
+
+데이터를 불러온 후 **Analyses** 탭을 클릭하고, **Regression** 메뉴에서 **Logistic Regression**을 선택한다. 왼쪽 패널에서 `dementia` 변수를 **Dependent Variable**로, `age` 변수를 **Covariates**로 설정한다. 그러면 자동으로 로지스틱 회귀 모델이 생성되어 오른쪽 패널에서 결과를 확인할 수 있다.
+
+![로지스틱 회귀를 실행한 결과](images/jamovi-logistic.png){#fig-jamovi-logistic fig-align="center" width=80%}
+
+
+
+
