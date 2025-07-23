@@ -153,7 +153,7 @@ ddf
 ```
 
 ```{r}
-4*(3-mean(ddf$y))^2 + 4*(7-mean(ddf$y))^2
+4 * (3 - mean(ddf$y))^2 + 4 * (7 - mean(ddf$y))^2
 ```
 
 
@@ -176,7 +176,7 @@ $$
 \text{Total} = \text{Predictor(s)} + \text{Residual}
 $$
 
-## 전체 데이터 변동에 기여하는 정도 
+## 전체 데이터 변동에 기여하는 정도 {#sec-sum-squared-3}
 
 다음과 같은 공식을 염두에 두면서 전체 데이터 변동성에 각 요소가 얼마 만큼 기여하는지 생각해 보자.
 $$

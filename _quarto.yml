@@ -76,6 +76,9 @@ book:
         - contingency.qmd
         - chisq.qmd
         - diagnostic.qmd
+        - least-square.qmd
+        - terms.qmd
+        - logistic.qmd
         - infer-package.qmd
     - part: notebook.qmd
       chapters:
@@ -100,17 +103,17 @@ format:
     theme:
       light: [united] 
       dark: darkly
-  pdf:
-    pdf-engine: xelatex
-    include-in-header: hangul.tex
-    toc: true
-    number-sections: true
-    highlight-style: github
-    geometry:
-      - top=30mm
-      - left=20mm
-      - heightrounded
-    code-block-border-left: "#D3D3D3"
+  # pdf:
+  #   pdf-engine: xelatex
+  #   include-in-header: hangul.tex
+  #   toc: true
+  #   number-sections: true
+  #   highlight-style: github
+  #   geometry:
+  #     - top=30mm
+  #     - left=20mm
+  #     - heightrounded
+  #   code-block-border-left: "#D3D3D3"
 
     
 

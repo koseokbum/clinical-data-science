@@ -1,0 +1,355 @@
+# 최소제곱법([least squares]{.style-text font-weight="bold" color="#023FA5"})을 사용한 단순 선형 회귀 {#sec-least-square}
+
+여기서는 회귀(regression)의 원리 중 하나인 최소제곱법(least squares)에 대해 설명한다. 최소제곱법은 주어진 데이터에 가장 잘 맞는 직선(또는 곡선)을 찾는 방법으로 아주 널리 사용되고 역사도 깊다. 
+
+선형 회귀는 통계학에서 반응 변수(response variable)와 설명 변수들(explanatory variables) 사이의 관계를 모델링하는 방법으로, **반응 변수가 연속 변수인 경우에 사용되는 방법**이다. 선형 회귀는 반응 변수와 설명 변수 사이의 선형 관계를 가정하고, 이 관계를 수학적으로 표현하는 방법이다. 
+
+반응 변수가 하나이고 설명 변수 역시 하나인 경우를 **단순 선형 회귀(simple linear regression)**라고 하며, 반응 변수가 하나이고 설명 변수가 여러 개인 경우를 **다중 선형 회귀(multiple linear regression)**라고 한다.
+
+여기선 가장 간단한 단순 선형 회귀(simple linear regression) 방법과 회귀에 관련된 용어들을 설명하고자 한다. 
+
+
+::: {.callout-note}
+## 로지스틱 회귀는 회귀(regression)가 아니다.
+
+로지스틱 회귀(logistic regression)는 반응 변수가 범주형(categorical)인 경우에 사용되는 방법으로, 선형 회귀와는 다른 방법이다. 로지스틱 회귀는 반응 변수가 범주형일 때, 그 범주를 예측하는 방법으로, 확률을 모델링하는 데 사용된다. 따라서 로지스틱 회귀는 선형 회귀와는 다른 방법이다. 최근에는 머신러닝/딥러닝 분야에서는 다음과 같이 용어를 사용하는 경향이 있다.
+
+- 회귀(regression): 반응 변수가 연속형인 경우
+- 분류(classification): 반응 변수가 범주형인 경우
+:::
+
+## 데이터와 그래프  
+
+다음과 같은 데이터가 있다고 가정하자. 이 데이터는 설명 변수 $X$와 반응 변수 $Y$로 이루어져 있다. 이 데이터를 사용하여 단순 선형 회귀를 수행할 것이다[@draper_applied_1998].
+
+```{r}
+#| message: false
+# tidyverse tibble 
+library(tidyverse)
+
+df <- tribble(
+  ~observation, ~Y,    ~X,
+   1, 10.98, 35.3,
+   2, 11.13, 29.7,
+   3, 12.51, 30.8,
+   4,  8.40, 58.8,
+   5,  9.27, 61.4,
+   6,  8.73, 71.3,
+   7,  6.36, 74.4,
+   8,  8.50, 76.7,
+   9,  7.82, 70.7,
+  10,  9.14, 57.5,
+  11,  8.24, 46.4,
+  12, 12.19, 28.9,
+  13, 11.88, 28.1,
+  14,  9.57, 39.1,
+  15, 10.94, 46.8,
+  16,  9.58, 48.5,
+  17, 10.09, 59.3,
+  18,  8.11, 70.0,
+  19,  6.83, 70.0,
+  20,  8.88, 74.5,
+  21,  7.68, 72.1,
+  22,  8.47, 58.1,
+  23,  8.86, 44.6,
+  24, 10.36, 33.4,
+  25, 11.08, 28.6
+)
+
+df
+```
+
+산점도를 그려보면 $X$와 $Y$ 사이에 선형 관계가 있는 것을 확인할 수 있다.
+
+```{r}
+#| label: fig-scatter-plot
+#| fig-cap: X-Y 산점도(scatter plot)
+ggplot(df, aes(x = X, y = Y)) + 
+  geom_point(color="orange3") +
+  labs(x = "X", y = "Y") 
+```
+
+상관계수를 계산해보면 $X$와 $Y$ 사이에 비교적 강한 음의 상관관계가 있음을 알 수 있다.
+
+```{r}
+cor(df$X, df$Y)
+```
+
+우리는 단순 선형 회귀를 사용하여 다음과 같은 최적의 직선을 찾고자 한다.
+
+```{r}
+#| label: fig-scatter-plot2
+#| fig-cap: X-Y 산점도(scatter plot)와 최적 회귀선
+ggplot(df, aes(x = X, y = Y)) + 
+  geom_point(color="orange3") +
+  geom_smooth(method = "lm", color="red", se=FALSE) +
+  labs(x = "X", y = "Y") 
+```
+
+이 데이터는 $X$와 $Y$의 관측값(observation)으로 이루어져 있다. $X$는 설명 변수이고, $Y$는 반응 변수이다. 이 데이터를 사용하여 단순 선형 회귀를 수행할 것이다. 여기서는 최소제곱법(least squares)을 사용하여 회귀선을 찾는 방법을 설명할 것인데, 이 방법으로만 선형 회귀를 수행하는 것은 아니다. 다른 여러 가지 방법들이 있다. 
+
+## 최소제곱법을 사용한 단순 선형 회귀
+
+설명 변수 $X$와 반응 변수 $Y$가 있을 때, 다음과 같은 단순 선형 모델을 가정한다.
+
+$$
+Y = \beta_0 + \beta_1 X + \epsilon
+$$ {#eq-linear-model}
+
+여기서 $\beta_0$는 **절편(intercept)**, $\beta_1$은 **기울기(slope)**이며 이것들을 합쳐 모델의 **파라미터(parameter)**라고 부른다. $\epsilon$은 **오차항(error term)**으로, 모델이 설명하지 못하는 부분을 나타낸다.
+
+
+::: {.callout-note}
+## 수식을 한번 구경하는 것은 나쁘지 않다.
+
+베이스 R에서는 `lm()` 함수를 사용하여 회귀 분석을 바로 할 수 있다. 최소제곱법의 원리를 개념적으로 이해하는 것은 중요하다. 이 개념을 알면 머신러닝/딥러닝 등 최신 기술을 이해하는 데도 도움이 많이 된다.
+:::
+
+
+관측값의 쌍을 $(X_1, Y_1)$, $(X_2, Y_2)$, ..., $(X_n, Y_n)$이라고 하면 다음과 같이 쓸 수 있다.
+
+$$
+Y_i = \beta_0 + \beta_1 X_i + \epsilon_i
+$$ {#eq-predicted-value-i}
+
+**최소제곱법은 오차항 $\epsilon_i$의 제곱합을 최소화하는 $\beta_0$와 $\beta_1$을 찾는 방법이다**. 오차항은 다음과 같이 정의된다.
+
+$$
+\epsilon_i = Y_i - (\beta_0 + \beta_1 X_i)
+$$ {#eq-error-term}
+
+이 오차항의 제곱합은 다음과 같이 쓸 수 있다.
+$$
+S = \sum_{i=1}^{n} \epsilon_i^2 = \sum_{i=1}^{n} (Y_i - (\beta_0 + \beta_1 X_i))^2
+$$ {#eq-sum-of-squares}
+
+::: {.callout-note}
+## 제곱하여 합하는 이유 
+오차항을 제곱하여 합하는 이유는 오차의 부호(sign)에 관계없이 오차의 크기를 반영하기 위함이기도 하고, 제곱을 하기 때문에 오차가 큰 경우 더 큰 패널티를 주기 위함이기도 하다. 또한, 제곱을 하면 오차항이 서로 상쇄되는 것을 방지할 수 있다. 만약 오차항을 단순히 합한다면, 양수와 음수가 서로 상쇄되어 오차가 작게 나타날 수 있다.
+:::
+
+이제 이 식을 $\beta_0$와 $\beta_1$에 대해 최소화해야 한다. (함수의 최솟값을 구했던 것을 상기하자.) 이를 위해 편미분(partial derivative)을 사용하여 각각의 파라미터에 대한 최적 조건을 구한다. 즉, 편미분을 통해 각 파라미터에 대한 기울기를 구하고, 이를 0으로 설정하여 최적의 파라미터 값을 찾는다.
+
+::: {.callout-note}
+## 편미분 
+
+편미분(partial derivative)은 다변수 함수에서 특정 변수에 대한 변화율을 구하는 방법이다. 예를 들어, 함수 $f(x, y)$의 $x$에 대한 편미분은 $y$를 상수로 간주하고 $x$에 대한 변화율을 구하는 것이다. $f(x, y)$의 $x$에 대한 편미분은 $\frac{\partial f}{\partial x}$로 표기한다. 또한 $y$에 대한 편미분은 $x$를 상수로 놓고 변화율을 구하고, $\frac{\partial f}{\partial y}$로 표기한다.
+:::
+
+$\beta_0$에 대한 편미분을 실행하여, 그 값을 `0`으로 설정하면 다음과 같은 식을 얻는다.
+
+$$
+\frac{\partial S}{\partial \beta_0} = -2 \sum_{i=1}^{n} (Y_i - (\beta_0 + \beta_1 X_i)) = 0
+$$ {#eq-partial-derivative-beta0}
+
+$\beta_1$에 대한 편미분을 실행하고, 그 값을 `0`으로 설정하면 다음과 같은 식을 얻는다.
+
+$$
+\frac{\partial S}{\partial \beta_1} = -2 \sum_{i=1}^{n} X_i (Y_i - (\beta_0 + \beta_1 X_i)) = 0
+$$ {#eq-partial-derivative-beta1}
+
+이 두 식(2항 1차 방정식)을 풀면 $\beta_0$와 $\beta_1$의 값을 구할 수 있다. 추정된 파마미터를 각각 $b_0$, $b_1$이라고 하면, $\beta_0$, $\beta_1$을 이 값으로 대체한다.
+
+그렇게 계산하면 다음과 같은 결과를 얻는다.
+
+$$
+b_1 = \frac{\sum_{i=1}^{n} (X_i - \bar{X})(Y_i - \bar{Y})}{\sum_{i=1}^{n} (X_i - \bar{X})^2} 
+$$ {#eq-slope}
+
+$$
+b_0 = \bar{Y} - b_1 \bar{X}
+$$ {#eq-intercept}
+
+여기서 $\bar{X}$와 $\bar{Y}$는 각각 $X$와 $Y$의 평균이다.
+
+R로 우리 데이터의 값을 가지고 계산해 보자(물론 이렇게 매뉴얼로 계산하지는 않는데 나중에 맞춰보기 위해서 계산해 보자). 
+
+```{r}
+#| label: code-least-square 
+b1 <- sum((df$X - mean(df$X)) * (df$Y - mean(df$Y))) / 
+  sum((df$X - mean(df$X))^2)
+b0 <- mean(df$Y) - b1 * mean(df$X)
+
+b1 # 기울기
+b0 # 절편
+```
+
+따라서, 이 데이터에 대한 선형 모델은 다음과 같다.
+$$
+\hat{Y} = 13.62299 - 0.07982869 X
+$$ {#eq-linear-model-estimated}
+
+::: {.callout-tip}
+## 기울기와 절편의 해석 
+
+- 기울기 $b_1$은 $X$가 1 단위 증가할 때, $Y$가 평균적으로 얼마나 변화하는지를 나타낸다. 즉, $X$가 1 단위 증가할 때, $Y$는 평균적으로 약 0.0798 단위 감소한다는 것을 의미한다. 
+- 절편 $b_0$은 $X$가 0일 때, $Y$의 예상값이다. 즉, $X$가 0일 때, $Y$는 약 13.623이라는 값을 갖는다.
+:::
+
+**잔차(residuals)**는 관측값과 예측값의 차이이다. 즉, 실제 관측된 값과 모델이 예측한 값의 차이를 말한다. R로 이 잔차를 계산해 보자.
+
+```{r}
+#| label: code-residuals
+df <- df %>%
+  mutate(residuals = Y - (b0 + b1 * X))
+df
+```
+
+
+잔차의 제곱합을 계산해 보자. 이 값은 최소제곱법에서 최소화하려는 값으로, 모델을 평가하는 데 사용한다.
+
+```{r}
+#| label: code-sum-of-squares
+df %>%
+  summarise(sum_of_squares = sum(residuals^2))
+``` 
+
+그래프를 그려서 잔차를 시각화해 보자. 잔차는 회귀 직선에서 관측값까지의 **수직 거리**이다. 이 거리를 제곱하여 더한 값이 최소가 되는 $\beta_0$와 $\beta_1$을 찾는 것이 최소제곱법의 핵심이다.
+
+::: {.callout-warning}
+## 최단 거리가 아니다.
+
+잔차는 점과 선까지의 최단 거리가 아니고 수직 거리임을 주의한다. 
+:::
+
+```{r}
+#| label: fig-least-square-plot
+#| fig-cap: 회귀선까지의 수직 거리를 제곱하여 합한 값이 최소가 되는 $\beta_0$와 $\beta_1$을 찾는 것이 최소제곱법의 핵심이다.
+ggplot(df) + 
+  geom_point(aes(x = X, y = Y), color="blue") +
+  geom_abline(slope = b1, intercept = b0, color="red") +
+  labs(x = "X", y = "Y") +
+  geom_segment(aes(x = X, y = Y, xend = X, yend = (b0 + b1 * X)), 
+               color="steelblue", linetype="dashed") +  
+  theme_minimal()
+```
+
+잔차를 다음과 같이 시각화할 수도 있다.
+
+```{r}
+#| label: fig-residuals-plot
+#| fig-cap: 잔차(residuals) 시각화
+
+ggplot(df) + 
+  geom_point(aes(x = X, y = residuals), color="blue") +
+  labs(x = "X", y = "Residuals") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red")
+```
+
+
+## R에서 단순 선형 회귀
+
+R에서는 `lm()` 함수를 사용하여 단순 선형 회귀를 수행할 수 있다. 다음과 같이 포뮬러를 사용하여 모델을 정의하고 실행하면 결과가 출력된다.
+
+```{r}
+result <- lm(Y ~ X, data = df)
+summary(result)
+```
+
+이 결과에서 `Coefficients` 부분을 보면, 기울기와 절편의 추정값을 확인할 수 있다. 또는 다음과 같이 `coef()` 함수를 사용하여 추정된 파라미터를 확인할 수도 있다.
+
+```{r}
+coef(result)
+```
+
+## 단수 회귀 모델에서 가설 검정 
+
+단순 선형 회귀 모델에서 가설 검정은 주로 기울기 $\beta_1$가 0인지 여부를 검정하는 데 사용된다. 바꾸어 말하면, 기울기가 `0`이기 때문에 설명 변수 $X$가 반응 변수 $Y$에 영향을 미치지 않는다는 귀무 가설을 검정한다.
+
+이론적으로 가설 검정은 다음과 같이 수행된다.
+
+1. **귀무 가설(H0)**: $\beta_1 = 0$ (설명 변수 $X$가 반응 변수 $Y$에 영향을 미치지 않는다.)
+1. **검정 통계량**: t-통계량을 사용한다. t-통계량은 다음과 같이 계산된다.
+
+    $$
+    t = \frac{b_1}{SE(b_1)}
+    $$ {#eq-t-statistic}
+
+    여기서 $b_1$은 기울기의 추정값이고, $SE(b_1)$은 기울기의 표준 오차(standard error)이다. 자유도는 `n - 2`로 계산된다. 여기서 `n`은 관측치의 수이다.
+
+
+::: {.callout-note}
+## t-통계량
+
+자료를 검색하거나 ChatGPT 등을 사용하면 이 통계량을 유도하는 방법을 찾을 수 있다. 
+:::
+
+::: {.callout-note}
+## 자유도 `n - 2`
+
+자유도는 표본의 크기에서 추정된 파라미터의 수를 뺀 값이다. 단순 선형 회귀에서는 절편과 기울기를 추정하므로 자유도는 `n - 2`가 된다.
+:::
+
+우리는 `lm()` 함수의 결과를 가지고 위 값들을 볼 수 있다. 
+
+```{r}
+summary(result)
+```
+
+추정된 기울기는 `-0.07983`이고, 표준 오차는 `0.01052`이다. 따라서 t-통계량은 이 값들을 나누면 다음과 같이 계산되고 `lm()` 함수의 결과에서도 확인할 수 있다.
+
+```{r}
+- 0.07983 / 0.01052
+```
+
+`lm()` 함수의 결과에서 `t value`로 표시되는 값이 바로 이 t-통계량이다. 
+
+그리고 자유도가 여기에서는 `n - 2 = 25 - 2 = 23`이므로, 이 자유도를 고려한 t-분포를 사용하여 p-값을 계산할 수 있다.
+
+
+::: {.callout-note}
+## 절편
+
+절편에 대한 가설 검정을 수행할 수도 있지만 잘 하지 않고, 한다면 기울기와 같은 방식으로 진행된다고 알고 있으면 될 것으로 본다.
+:::
+
+
+**회귀 모형의 유의성은 ANOVA를 통한 F-검정을 통해 평가할 수 있다.** 지금 여기서는 단순 선형 회귀 분석이기 때문에 위에서 설명한 t-검정과 지금 여기서 설명할 F-검정이 동일한 결과를 준다(위 결과를 잘 들여다 보자). 
+
+일반적으로 분산 분석에서는 [@sec-sum-squared-3]에서 설명했듯이 다음과 같은 개념에서 출발한다.
+
+$$
+\text{Total} = \text{Predictor(s)} + \text{Residual}
+$$
+
+[@fig-sum-squared-r3]은 생각하기 편하게 이 관계를 그림으로 나타낸 것으로 F-검정은 자유도까지 고려하여 빨간색 부분 : 파란색 부분의 비율을 보는 것으로 이해하면 된다.
+
+![전체 변동에 기여하는 정도를 생각하자!](images/sumofsquares.png){#fig-sum-squared-r3 fig-align="center" width="50%"}
+
+
+이 경우에서는 총 변동은 $Y$의 총 변동(variance)이고, 회귀 변동(regression variation)은 회귀 모델이 설명하는 변동, 잔차 변동(residual variation)은 회귀 모델이 설명하지 못하는 변동이고, 다음과 같이 정의된다.
+
+$$
+\text{Total Variation} = \text{Regression Variation} + \text{Residual Variation}
+$$ {#eq-total-regression-residual}
+
+
+F-검정은 자유도를 포함시켜 다음과 같이 정의된다.
+$$
+F = \frac{\text{Regression Variation} / \text{df}_{\text{Regression}}}{\text{Residual Variation} / \text{df}_{\text{Residual}}}
+$$ {#eq-f-statistic}
+
+이 경우 F-통계량은 다음과 같이 계산된다. 계산된 p-값은 위에서 설명한 t-검정과 동일하다.
+
+```{r}
+k = summary(aov(result))
+k
+```
+
+**결정 계수(coefficient of determination) $R^2$**는 회귀 모델이 설명하는 변동의 비율을 나타내며, 다음과 같이 계산된다. 이 값은 0과 1 사이의 값을 가지며, 값이 클수록 회귀 모델이 데이터를 잘 설명한다는 것을 의미한다. 즉 Residual Variation이 거의 없어 0으로 근접한다는 것을 의미하고, 이것은 모델에 데이터를 잘 맞춘다(goodness of fit)고 한다.
+
+$$
+R^2 = \frac{\text{Regression Variation}}{\text{Total Variation}} = 1 - \frac{\text{Residual Variation}}{\text{Total Variation}}
+$$ {#eq-r-squared}
+
+이 경우에는 차례로 계산하면 다음과 같다. 앞에서 잔차의 제곱합은 `18.2`였다. 그래서 총 변동을 구해서 대입하면 될 것이다.
+
+```{r}
+1 - (18.2 / sum((df$Y - mean(df$Y))^2))
+```
+
+이 값도 `lm()` 함수의 결과에서 확인할 수 있다.
+
+## 정리 
+
+물론 회귀식을 구하는 방법은 최소제곱법(least squares)만 있는 것은 아니지만, 회귀의 원리를 이해하는 데는 많은 도움이 되고 많이 사용되므로 알아두면 좋을 것 같다. 베이스 R에서는 `lm()` 함수를 사용하여 쉽게 계산할 수 있다. 그리고, 회귀에서 사용되는 개념들을 정리해 보았다.

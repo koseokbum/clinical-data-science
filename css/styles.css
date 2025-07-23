@@ -1,1 +1,8 @@
 /*-- scss:rules --*/
+
+/* 코드 결과의 배경색 지정 */
+.cell-output {
+    background-color: #f0f8ff;  /* 연한 파란색 */
+    padding: 10px;
+    border-radius: 5px;
+}
